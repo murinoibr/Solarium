@@ -17,10 +17,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Instalar Gradle na máquina virtual
-        uses: gradle/actions/setup-gradle@v3
+      - name: Instalar Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.5'
+          gradle-version: '9.3.1'
 
       - name: Localizar projeto e compilar APK
         run: |
@@ -32,12 +32,11 @@ jobs:
             cd "$PROJECT_ROOT"
           fi
 
-          # Se o gradlew existir, dá permissão; se não, usa o Gradle instalado no sistema
           if [ -f "gradlew" ]; then
             chmod +x gradlew
             ./gradlew assembleDebug --stacktrace
           else
-            echo "gradlew não encontrado. Compilando com o Gradle instalado..."
+            echo "gradlew não encontrado. Compilando com Gradle 9.3.1..."
             gradle assembleDebug --stacktrace
           fi
 
