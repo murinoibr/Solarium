@@ -22,9 +22,8 @@ jobs:
         with:
           gradle-version: '9.3.1'
 
-      - name: Localizar projeto e compilar APK
+      - name: Localizar projeto e compilar APK com Display Virtual
         run: |
-          # Localiza a pasta onde está o build.gradle.kts ou settings.gradle
           PROJECT_ROOT=$(dirname $(find . -name "settings.gradle*" -o -name "build.gradle.kts" | head -n 1))
           
           if [ -n "$PROJECT_ROOT" ] && [ -d "$PROJECT_ROOT" ]; then
@@ -32,12 +31,13 @@ jobs:
             cd "$PROJECT_ROOT"
           fi
 
+          # Executa dentro do xvfb para fornecer um ambiente gráfico virtual ao AWT do KSP
           if [ -f "gradlew" ]; then
             chmod +x gradlew
-            ./gradlew assembleDebug --stacktrace
+            xvfb-run --auto-servernum ./gradlew assembleDebug --stacktrace
           else
             echo "gradlew não encontrado. Compilando com Gradle 9.3.1..."
-            gradle assembleDebug --stacktrace
+            xvfb-run --auto-servernum gradle assembleDebug --stacktrace
           fi
 
       - name: Salvar o arquivo APK
