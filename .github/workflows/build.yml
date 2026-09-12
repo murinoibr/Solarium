@@ -6,8 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Baixar código
+      - name: Baixar o repositório
         uses: actions/checkout@v4
 
       - name: Configurar Java 17
@@ -16,14 +17,32 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Dar permissão ao executável Gradle
-        run: chmod +x gradlew
+      - name: Instalar Gradle na máquina virtual
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
 
-      - name: Compilar APK Debug
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Localizar projeto e compilar APK
+        run: |
+          # Localiza a pasta onde está o build.gradle.kts ou settings.gradle
+          PROJECT_ROOT=$(dirname $(find . -name "settings.gradle*" -o -name "build.gradle.kts" | head -n 1))
+          
+          if [ -n "$PROJECT_ROOT" ] && [ -d "$PROJECT_ROOT" ]; then
+            echo "Entrando na pasta do projeto: $PROJECT_ROOT"
+            cd "$PROJECT_ROOT"
+          fi
 
-      - name: Disponibilizar APK para download
+          # Se o gradlew existir, dá permissão; se não, usa o Gradle instalado no sistema
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug --stacktrace
+          else
+            echo "gradlew não encontrado. Compilando com o Gradle instalado..."
+            gradle assembleDebug --stacktrace
+          fi
+
+      - name: Salvar o arquivo APK
         uses: actions/upload-artifact@v4
         with:
-          name: Solarium-APK
-          path: app/build/outputs/apk/debug/*.apk
+          name: Solarium-Debug-APK
+          path: '**/build/outputs/apk/debug/*.apk'
