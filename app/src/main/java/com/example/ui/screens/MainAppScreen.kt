@@ -43,7 +43,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -58,14 +61,19 @@ fun MainAppScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.copyFeedbackMessage) {
-        uiState.copyFeedbackMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
-            viewModel.clearFeedback()
+    if (uiState.isLaunchPageVisible) {
+        WelcomeSplashScreen(
+            onFinish = { viewModel.dismissLaunchPage() }
+        )
+    } else {
+        LaunchedEffect(uiState.copyFeedbackMessage) {
+            uiState.copyFeedbackMessage?.let { message ->
+                snackbarHostState.showSnackbar(message)
+                viewModel.clearFeedback()
+            }
         }
-    }
 
-    Scaffold(
+        Scaffold(
         modifier = Modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets.safeDrawing,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -258,7 +266,8 @@ fun MainAppScreen(
                                 onNavigateToMap = { viewModel.selectTab(2) },
                                 onNavigateToRecommendations = { viewModel.selectTab(3) },
                                 onNavigateToChat = { viewModel.selectTab(4) },
-                                onFeedback = { viewModel.showFeedback(it) }
+                                onFeedback = { viewModel.showFeedback(it) },
+                                onOpenLaunchPage = { viewModel.openLaunchPage() }
                             )
                             1 -> ManualScreen(
                                 sections = viewModel.allSections,
@@ -317,4 +326,5 @@ fun MainAppScreen(
             }
         }
     }
+}
 }

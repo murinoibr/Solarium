@@ -39,7 +39,8 @@ data class HouseUiState(
         )
     ),
     val isChatLoading: Boolean = false,
-    val copyFeedbackMessage: String? = null
+    val copyFeedbackMessage: String? = null,
+    val isLaunchPageVisible: Boolean = true
 )
 
 class HouseViewModel : ViewModel() {
@@ -52,6 +53,14 @@ class HouseViewModel : ViewModel() {
     val allFloorPoints: List<FloorPlanPoint> = HouseRepository.floorPlanPoints
     val allRecommendations: List<LocalRecommendation> = HouseRepository.localRecommendations
     val quickPrompts: List<String> = HouseRepository.quickQuestions
+
+    fun dismissLaunchPage() {
+        _uiState.update { it.copy(isLaunchPageVisible = false) }
+    }
+
+    fun openLaunchPage() {
+        _uiState.update { it.copy(isLaunchPageVisible = true) }
+    }
 
     fun selectTab(tabIndex: Int) {
         _uiState.update { it.copy(currentTab = tabIndex) }

@@ -60,20 +60,13 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Keep warm signature Solarium palette
+    darkTheme: Boolean = false, // Always false: App is strictly light theme
+    dynamicColor: Boolean = false, // Keep warm signature Solarium light palette
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
-    val customColors = if (darkTheme) DarkSolariumCustomColors else LightSolariumCustomColors
+    // Strictly Light Color Scheme to respect user requirement: no dark mode
+    val colorScheme = LightColorScheme
+    val customColors = LightSolariumCustomColors
 
     CompositionLocalProvider(
         LocalSolariumCustomColors provides customColors
@@ -88,8 +81,8 @@ fun MyApplicationTheme(
 
 @Composable
 fun SolariumAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    MyApplicationTheme(darkTheme = darkTheme, dynamicColor = false, content = content)
+    MyApplicationTheme(darkTheme = false, dynamicColor = false, content = content)
 }

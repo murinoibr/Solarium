@@ -32,7 +32,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.Call
@@ -95,6 +95,7 @@ fun HomeScreen(
     onNavigateToRecommendations: () -> Unit,
     onNavigateToChat: () -> Unit,
     onFeedback: (String) -> Unit,
+    onOpenLaunchPage: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -113,13 +114,14 @@ fun HomeScreen(
                 onCopyAddress = {
                     copyToClipboard(context, HouseRepository.HOUSE_ADDRESS, "Endereço da casa copiado!")
                     onFeedback("Endereço copiado para a área de transferência")
-                }
+                },
+                onOpenLaunchPage = onOpenLaunchPage
             )
         }
 
-        // 2. Cartões Rápidos de Acesso e Wi-Fi (Clean & Funcional)
-        item(key = "quick_info_strip") {
-            QuickInfoStrip(
+        // 2. Linha de 5 Atalhos Rápidos Circulares (Wi-Fi, Anfitriã, Mapa, Dicas, Chat IA)
+        item(key = "quick_action_buttons_row") {
+            QuickActionButtonsRow(
                 onCopyWifi = {
                     copyToClipboard(context, HouseRepository.WIFI_PASSWORD, "Senha do Wi-Fi copiada!")
                     onFeedback("Senha do Wi-Fi copiada: ${HouseRepository.WIFI_PASSWORD}")
@@ -127,7 +129,9 @@ fun HomeScreen(
                 onContactHost = {
                     openWhatsApp(context, HouseRepository.HOST_PHONE, "Olá Valéria! Sou hóspede da casa Solarium.")
                 },
-                onFeedback = onFeedback
+                onNavigateToMap = onNavigateToMap,
+                onNavigateToRecommendations = onNavigateToRecommendations,
+                onNavigateToChat = onNavigateToChat
             )
         }
 
@@ -136,7 +140,7 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 10.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -190,20 +194,37 @@ fun HomeScreen(
             }
         }
 
-        // 4. Grade/Lista Minimalista com os 10 Itens
+        // 4. Grade de 2 Colunas com os 10 Capítulos do Manual (idêntica ao vídeo)
+        val chunkedSections = sections.chunked(2)
         items(
-            count = sections.size,
-            key = { index -> "manual_item_${sections[index].id}" }
-        ) { index ->
-            val section = sections[index]
-            MinimalistManualItemRow(
-                index = index + 1,
-                section = section,
-                onClick = { onSectionClick(section) }
-            )
+            count = chunkedSections.size,
+            key = { rowIndex -> "manual_grid_row_$rowIndex" }
+        ) { rowIndex ->
+            val rowPair = chunkedSections[rowIndex]
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ManualGridCard(
+                    section = rowPair[0],
+                    onClick = { onSectionClick(rowPair[0]) },
+                    modifier = Modifier.weight(1f)
+                )
+                if (rowPair.size > 1) {
+                    ManualGridCard(
+                        section = rowPair[1],
+                        onClick = { onSectionClick(rowPair[1]) },
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
         }
 
-        // 5. Atalhos Rápidos para Outras Seções (Clean & Modern)
+        // 5. Atalhos Rápidos para Outras Seções (Explorar a Casa e Arredores)
         item(key = "quick_shortcuts_footer") {
             QuickNavigationShortcuts(
                 onNavigateToMap = onNavigateToMap,
@@ -219,7 +240,8 @@ fun HomeScreen(
  */
 @Composable
 private fun SolariumMinimalistBrandHeader(
-    onCopyAddress: () -> Unit
+    onCopyAddress: () -> Unit,
+    onOpenLaunchPage: () -> Unit
 ) {
     val colors = SolariumTheme.colors
     val infiniteTransition = rememberInfiniteTransition(label = "sun_pulse")
@@ -243,7 +265,7 @@ private fun SolariumMinimalistBrandHeader(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Ícone Minimalista de Sol com Raios Geométricos
+            // Ícone Minimalista de Sol com Raios Geométricos (toque para abrir a launchpage)
             Box(
                 modifier = Modifier
                     .size(72.dp)
@@ -256,7 +278,8 @@ private fun SolariumMinimalistBrandHeader(
                                 Color.Transparent
                             )
                         )
-                    ),
+                    )
+                    .clickable(role = Role.Button, onClick = onOpenLaunchPage),
                 contentAlignment = Alignment.Center
             ) {
                 MinimalistSunLogoCanvas(
@@ -285,9 +308,9 @@ private fun SolariumMinimalistBrandHeader(
             Spacer(modifier = Modifier.height(2.dp))
 
             Text(
-                text = "CASA DE CAMPO • SÃO LOURENÇO, MG",
+                text = "ESTÂNCIA & REFÚGIO • SÃO LOURENÇO, MG",
                 style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 10.sp,
+                    fontSize = 10.5.sp,
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 2.sp
                 ),
@@ -297,11 +320,12 @@ private fun SolariumMinimalistBrandHeader(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Frase de Boas-Vindas Minimalista
+            // Frase de Boas-Vindas e Endereço Copiável
             Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = colors.creamCard,
+                shape = RoundedCornerShape(24.dp),
+                color = Color.White,
                 border = androidx.compose.foundation.BorderStroke(1.dp, colors.linenBorder),
+                shadowElevation = 1.dp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(role = Role.Button, onClick = onCopyAddress)
@@ -334,6 +358,31 @@ private fun SolariumMinimalistBrandHeader(
                         contentDescription = "Copiar endereço",
                         tint = colors.warmTerracotta,
                         modifier = Modifier.size(13.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Atalho para Rever a Tela de Abertura / Launchpage
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = colors.sunOrangeContainer.copy(alpha = 0.45f),
+                modifier = Modifier
+                    .clickable(role = Role.Button, onClick = onOpenLaunchPage)
+                    .testTag("btn_reopen_launchpage")
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "✨ Ver Tela de Abertura (Launchpage)",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = colors.warmTerracotta
                     )
                 }
             }
@@ -385,184 +434,148 @@ private fun MinimalistSunLogoCanvas(
 }
 
 /**
- * Linha de atalhos rápidos essenciais (Wi-Fi 1-toque, Check-in/out, Contato Valéria).
+ * Linha de 5 Atalhos Rápidos Circulares (Wi-Fi, Anfitriã, Mapa, Dicas, Chat IA) exatamente como no vídeo.
  */
 @Composable
-private fun QuickInfoStrip(
+private fun QuickActionButtonsRow(
     onCopyWifi: () -> Unit,
     onContactHost: () -> Unit,
-    onFeedback: (String) -> Unit
+    onNavigateToMap: () -> Unit,
+    onNavigateToRecommendations: () -> Unit,
+    onNavigateToChat: () -> Unit
 ) {
     val colors = SolariumTheme.colors
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Cartão Wi-Fi Rápido
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = colors.creamCard,
-            border = androidx.compose.foundation.BorderStroke(1.dp, colors.linenBorder),
-            modifier = Modifier
-                .weight(1f)
-                .clickable(role = Role.Button, onClick = onCopyWifi)
-                .testTag("quick_wifi_chip")
-        ) {
-            Row(
-                modifier = Modifier.padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(CircleShape)
-                        .background(colors.sunOrangeContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Wifi,
-                        contentDescription = "Wi-Fi",
-                        tint = colors.sunOrange,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text = "Wi-Fi: ${HouseRepository.WIFI_SSID}",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        ),
-                        color = colors.textPrimary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "Toque p/ senha",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 11.sp
-                        ),
-                        color = colors.warmTerracotta
-                    )
-                }
-            }
-        }
+        QuickActionButton(
+            title = "Wi-Fi",
+            icon = Icons.Default.Wifi,
+            onClick = onCopyWifi,
+            testTag = "quick_btn_wifi"
+        )
+        QuickActionButton(
+            title = "Anfitriã",
+            icon = Icons.Default.Person,
+            onClick = onContactHost,
+            testTag = "quick_btn_host"
+        )
+        QuickActionButton(
+            title = "Mapa",
+            icon = Icons.Default.Map,
+            onClick = onNavigateToMap,
+            testTag = "quick_btn_map"
+        )
+        QuickActionButton(
+            title = "Dicas",
+            icon = Icons.Default.Explore,
+            onClick = onNavigateToRecommendations,
+            testTag = "quick_btn_tips"
+        )
+        QuickActionButton(
+            title = "Chat IA",
+            icon = Icons.Default.Chat,
+            onClick = onNavigateToChat,
+            testTag = "quick_btn_chat"
+        )
+    }
+}
 
-        // Cartão Contato Valéria
-        Surface(
-            shape = RoundedCornerShape(14.dp),
-            color = colors.creamCard,
-            border = androidx.compose.foundation.BorderStroke(1.dp, colors.linenBorder),
+@Composable
+private fun QuickActionButton(
+    title: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    testTag: String
+) {
+    val colors = SolariumTheme.colors
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = 4.dp, horizontal = 2.dp)
+            .testTag(testTag)
+    ) {
+        Box(
             modifier = Modifier
-                .weight(1f)
-                .clickable(role = Role.Button, onClick = onContactHost)
-                .testTag("quick_host_chip")
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(colors.sunOrangeContainer.copy(alpha = 0.55f)),
+            contentAlignment = Alignment.Center
         ) {
-            Row(
-                modifier = Modifier.padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .clip(CircleShape)
-                        .background(colors.softYellowContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Call,
-                        contentDescription = "WhatsApp Valéria",
-                        tint = colors.softYellow,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
-                Column {
-                    Text(
-                        text = "Anfitriã Valéria",
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
-                        ),
-                        color = colors.textPrimary,
-                        maxLines = 1
-                    )
-                    Text(
-                        text = "WhatsApp direto",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 11.sp
-                        ),
-                        color = colors.sunOrange
-                    )
-                }
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = colors.warmTerracotta,
+                modifier = Modifier.size(22.dp)
+            )
         }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontWeight = FontWeight.Medium,
+                fontSize = 11.5.sp
+            ),
+            color = colors.textPrimary,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
 /**
- * Item Minimalista de cada uma das 10 seções do manual.
+ * Card da Grade de 2 Colunas para cada um dos 10 itens do manual (idêntico ao vídeo).
  */
 @Composable
-private fun MinimalistManualItemRow(
-    index: Int,
+private fun ManualGridCard(
     section: ManualSection,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = SolariumTheme.colors
     val icon = iconForManualSection(section.id, section.iconName)
-    val formattedIndex = if (index < 10) "0$index" else "$index"
 
-    // Variação harmônica e acolhedora dos tons da paleta Solarium para os 10 itens
-    val (itemTint, containerTint) = when (index) {
-        1 -> Pair(colors.sunOrange, colors.sunOrangeContainer)
-        2 -> Pair(colors.warmTerracotta, colors.warmTerracottaContainer)
-        3 -> Pair(colors.softYellow, colors.softYellowContainer)
-        4 -> Pair(colors.sunOrange, colors.sunbeam)
-        5 -> Pair(colors.warmTerracotta, colors.warmTerracottaContainer)
-        6 -> Pair(colors.sunOrange, colors.sunOrangeContainer)
-        7 -> Pair(Color(0xFFBA3D25), Color(0xFFFFDDD4))
-        8 -> Pair(Color(0xFF43763D), Color(0xFFD6ECCF))
-        9 -> Pair(Color(0xFF26798C), Color(0xFFD0F0F7))
-        else -> Pair(colors.softYellow, colors.softYellowContainer)
+    // Paleta acolhedora e contrastante para cada um dos 10 tópicos
+    val (itemTint, containerTint) = when (section.id) {
+        1 -> Pair(Color(0xFFC85A32), Color(0xFFFFECE5)) // Bem-vindos (Coração)
+        2 -> Pair(Color(0xFF2D6A4F), Color(0xFFE8F5E9)) // Localização (Pin)
+        3 -> Pair(Color(0xFFD97706), Color(0xFFFEF3C7)) // Chegada / Check-in (Chave)
+        4 -> Pair(Color(0xFF7C3AED), Color(0xFFEDE9FE)) // Entretenimento (TV)
+        5 -> Pair(Color(0xFF0284C7), Color(0xFFE0F2FE)) // Cama, Banho & Conforto (Cama)
+        6 -> Pair(Color(0xFFDC2626), Color(0xFFFEE2E2)) // Cozinha Equipada (Restaurante)
+        7 -> Pair(Color(0xFFB45309), Color(0xFFFEF3C7)) // Regras & Segurança (Escudo)
+        8 -> Pair(Color(0xFF15803D), Color(0xFFDCFCE7)) // Lixo & Reciclagem (Lixeira)
+        9 -> Pair(Color(0xFF0D9488), Color(0xFFCCFBF1)) // Transporte & Garagem (Carro)
+        10 -> Pair(Color(0xFFEA580C), Color(0xFFFFEDD5)) // Atividades & Lazer (Bússola)
+        else -> Pair(colors.sunOrange, colors.sunOrangeContainer)
     }
 
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.creamCard),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, colors.linenBorder),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 5.dp)
-            .testTag("manual_item_card_${section.id}")
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        modifier = modifier
+            .height(116.dp)
+            .testTag("manual_grid_card_${section.id}")
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            // Número do Item (01 a 10) em estilo minimalista
-            Text(
-                text = formattedIndex,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    letterSpacing = 1.sp
-                ),
-                color = colors.textSecondary.copy(alpha = 0.6f),
-                modifier = Modifier.width(26.dp)
-            )
-
-            // Ícone do Item em Contêiner Circular Suave
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
                     .background(containerTint),
                 contentAlignment = Alignment.Center
@@ -571,53 +584,30 @@ private fun MinimalistManualItemRow(
                     imageVector = icon,
                     contentDescription = section.title,
                     tint = itemTint,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Informações do Item
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = section.title,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
-                    ),
-                    color = colors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = section.subtitle,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 11.5.sp
-                    ),
-                    color = colors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Seta sutil minimalista
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Abrir guia",
-                tint = colors.textSecondary.copy(alpha = 0.5f),
-                modifier = Modifier.size(16.dp)
+            Text(
+                text = section.title,
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
+                    lineHeight = 16.sp
+                ),
+                color = colors.textPrimary,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
 }
 
 /**
- * Mapeamento dos 10 itens para ícones limpos e expressivos do Material.
+ * Mapeamento dos 10 itens para ícones expressivos do Material Design.
  */
 private fun iconForManualSection(id: Int, iconName: String): ImageVector {
     return when (id) {
@@ -647,7 +637,7 @@ private fun iconForManualSection(id: Int, iconName: String): ImageVector {
 }
 
 /**
- * Atalhos Rápidos no Rodapé da Página Inicial.
+ * Atalhos no Rodapé "Explorar a Casa e Arredores" (3 Cards horizontais idênticos ao vídeo).
  */
 @Composable
 private fun QuickNavigationShortcuts(
@@ -662,30 +652,25 @@ private fun QuickNavigationShortcuts(
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
-        HorizontalDivider(
-            thickness = 1.dp,
-            color = colors.warmLinen,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
         Text(
             text = "Explorar a Casa e Arredores",
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
+                fontSize = 16.5.sp
             ),
             color = colors.textPrimary,
-            modifier = Modifier.padding(bottom = 10.dp)
+            modifier = Modifier.padding(bottom = 12.dp)
         )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ShortcutPill(
                 title = "Planta Baixa",
                 icon = Icons.Default.Map,
-                tint = colors.sunOrange,
+                tint = Color(0xFFC85A32),
+                containerTint = Color(0xFFFFECE5),
                 onClick = onNavigateToMap,
                 modifier = Modifier.weight(1f)
             )
@@ -693,15 +678,17 @@ private fun QuickNavigationShortcuts(
             ShortcutPill(
                 title = "Dicas Locais",
                 icon = Icons.Default.Explore,
-                tint = colors.softYellow,
+                tint = Color(0xFF2D6A4F),
+                containerTint = Color(0xFFE8F5E9),
                 onClick = onNavigateToRecommendations,
                 modifier = Modifier.weight(1f)
             )
 
             ShortcutPill(
                 title = "Concierge IA",
-                icon = Icons.AutoMirrored.Filled.Chat,
-                tint = colors.warmTerracotta,
+                icon = Icons.Default.Chat,
+                tint = Color(0xFFB84C26),
+                containerTint = Color(0xFFFFDBD0),
                 onClick = onNavigateToChat,
                 modifier = Modifier.weight(1f)
             )
@@ -714,34 +701,47 @@ private fun ShortcutPill(
     title: String,
     icon: ImageVector,
     tint: Color,
+    containerTint: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = SolariumTheme.colors
 
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = colors.creamCard,
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, colors.linenBorder),
-        modifier = modifier.clickable(role = Role.Button, onClick = onClick)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        onClick = onClick,
+        modifier = modifier.height(108.dp)
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 12.dp, horizontal = 6.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 12.dp, horizontal = 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = tint,
-                modifier = Modifier.size(20.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(containerTint),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = tint,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 11.sp
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 12.sp
                 ),
                 color = colors.textPrimary,
                 textAlign = TextAlign.Center,
