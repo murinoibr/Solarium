@@ -37,7 +37,6 @@ import com.example.data.model.ManualSection
 import com.example.data.model.RoomItem
 import com.example.data.repository.HouseRepository
 import com.example.ui.components.HouseHeader
-import com.example.ui.components.HouseMapSection
 import com.example.ui.components.RoomsGallerySection
 import com.example.ui.components.SectionCard
 
@@ -122,14 +121,6 @@ fun ManualScreen(
                 RoomsGallerySection(
                     rooms = rooms,
                     onRoomClick = { /* Handled in dialog */ },
-                    onNavigateToMapPoint = onNavigateToMapPoint,
-                    onNavigateToManual = onNavigateToManual
-                )
-            }
-
-            // Interactive House Map & Key Points Section (Planta e Grade Interativa)
-            item {
-                HouseMapSection(
                     onNavigateToMapPoint = onNavigateToMapPoint,
                     onNavigateToManual = onNavigateToManual
                 )

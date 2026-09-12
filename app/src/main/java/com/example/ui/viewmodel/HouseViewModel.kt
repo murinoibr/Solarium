@@ -25,7 +25,7 @@ data class HouseUiState(
     val searchQuery: String = "",
     val activeMapCategory: LocationCategory? = null,
     val selectedLocation: MapLocation? = null,
-    val mapViewMode: MapViewMode = MapViewMode.FLOOR_PLAN,
+    val mapViewMode: MapViewMode = MapViewMode.NEIGHBORHOOD,
     val activeFloorCategory: FloorPlanCategory? = null,
     val selectedFloorPoint: FloorPlanPoint? = null,
     val floorSearchQuery: String = "",
@@ -115,7 +115,7 @@ class HouseViewModel : ViewModel() {
 
     fun selectFloorPointById(pointId: String) {
         val found = allFloorPoints.find { it.id == pointId }
-        _uiState.update { it.copy(selectedFloorPoint = found, mapViewMode = MapViewMode.FLOOR_PLAN) }
+        _uiState.update { it.copy(selectedFloorPoint = found, mapViewMode = MapViewMode.NEIGHBORHOOD) }
     }
 
     fun updateFloorSearch(query: String) {

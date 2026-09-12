@@ -667,7 +667,7 @@ private fun QuickNavigationShortcuts(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             ShortcutPill(
-                title = "Planta Baixa",
+                title = "Mapa da Cidade",
                 icon = Icons.Default.Map,
                 tint = Color(0xFFC85A32),
                 containerTint = Color(0xFFFFECE5),

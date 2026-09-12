@@ -1010,34 +1010,19 @@ private fun RoomDetailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            if (room.manualSectionId != null && onNavigateToManual != null) {
-                                Button(
-                                    onClick = { onNavigateToManual(room.manualSectionId) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-                                ) {
-                                    Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Ver Manual", color = MaterialTheme.colorScheme.onSecondaryContainer)
-                                }
-                            }
-
-                            if (room.floorPointId != null && onNavigateToMapPoint != null) {
-                                Button(
-                                    onClick = { onNavigateToMapPoint(room.floorPointId) },
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                                ) {
-                                    Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Na Planta")
-                                }
+                        if (room.manualSectionId != null && onNavigateToManual != null) {
+                            Button(
+                                onClick = {
+                                    onDismiss()
+                                    onNavigateToManual(room.manualSectionId)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                            ) {
+                                Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Ver Instruções no Manual", color = MaterialTheme.colorScheme.onSecondaryContainer)
                             }
                         }
 

@@ -136,7 +136,7 @@ fun MainAppScreen(
                         icon = {
                             Icon(
                                 imageVector = if (uiState.currentTab == 2) Icons.Default.Map else Icons.Outlined.Map,
-                                contentDescription = "Mapa Interativo"
+                                contentDescription = "Mapa da Cidade"
                             )
                         },
                         label = {
