@@ -22,7 +22,15 @@ jobs:
         with:
           gradle-version: '9.3.1'
 
-      - name: Localizar projeto e compilar APK com Display Virtual
+      - name: Gerar chave de assinatura de teste (debug.keystore)
+        run: |
+          # Gera a chave padrão de debug do Android
+          keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          
+          # Copia também para dentro da pasta app/ por precaução
+          cp debug.keystore app/ 2>/dev/null || true
+
+      - name: Localizar projeto e compilar APK
         run: |
           PROJECT_ROOT=$(dirname $(find . -name "settings.gradle*" -o -name "build.gradle.kts" | head -n 1))
           
@@ -31,13 +39,12 @@ jobs:
             cd "$PROJECT_ROOT"
           fi
 
-          # Executa dentro do xvfb para fornecer um ambiente gráfico virtual ao AWT do KSP
           if [ -f "gradlew" ]; then
             chmod +x gradlew
-            xvfb-run --auto-servernum ./gradlew assembleDebug --stacktrace
+            ./gradlew assembleDebug --stacktrace
           else
             echo "gradlew não encontrado. Compilando com Gradle 9.3.1..."
-            xvfb-run --auto-servernum gradle assembleDebug --stacktrace
+            gradle assembleDebug --stacktrace
           fi
 
       - name: Salvar o arquivo APK
