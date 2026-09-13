@@ -8,27 +8,34 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -48,9 +54,9 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,42 +65,46 @@ import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sin
 
 /**
  * LaunchPage Oficial Solarium - Abertura Cinematográfica Ouro & Mandala
  *
- * Reproduz com precisão a sequência visual do vídeo de abertura da marca SOLARIUM:
- * 1. Fundo Champagne / Marfim Luxuoso (#F6F3ED a #DDD8CE) com vinheta suave e partículas de ouro flutuantes.
- * 2. Desabrochar da Mandala Solar Dourada (Geometria Sagrada floral de 16 pontas com detalhes de ourivesaria).
- * 3. Fita de Luz Dourada em Órbita Elíptica 3D ao redor do centro com rastro cintilante de poeira estelar.
- * 4. Wordmark "SOLARIUM" em tipografia tridimensional branca lapidar, com sombra nobre projetada sobre a mandala e bisel dourado.
- * 5. Explosão de Raios Solares Radiantes (Sunburst Dourado) emanando por trás da mandala.
- * 6. Toque em qualquer lugar ou botão "Entrar no Guia" para avanço imediato, com transição automática graciosa.
+ * Reprodução 1:1 rigorosa do vídeo da marca SOLARIUM:
+ * 1. Fundo neutro de estúdio com vinheta suave em tons de cinza-linho aquecido (#E6E4DE a #B8B2A6).
+ * 2. Partículas e fragmentos triangulares flutuantes de poeira dourada antiga (#B89C5D).
+ * 3. Desabrochar da Mandala Solar em ourivesaria de ouro acetinado (#B59A58 e #8F7638).
+ * 4. Fita de luz luminosa em órbita elíptica 3D (#FFFFFF com halo #E5C270 e cauda de faíscas).
+ * 5. Wordmark "SOLARIUM" fiel ao vídeo:
+ *    - Início com letras vazadas em fio de ouro translúcido.
+ *    - Revelação em tipografia geométrica moderna Sans-Serif, branco puro (#FFFFFF) com sombra 3D projetada (#483F31).
+ * 6. Explosão de raios solares dourados radiantes (Sunburst) emanando por trás da mandala.
+ * 7. Tela limpa e minimalista sem poluição visual, exatamente como no vídeo de abertura.
  */
 @Composable
 fun WelcomeSplashScreen(
     onFinish: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Linha do tempo da animação (0.0s a 8.5s)
+    // Linha do tempo da animação (0.0s a 4.0s - dinâmica e fluida)
     val animTime = remember { Animatable(0f) }
 
-    // Rotação sutil contínua e pulsação de respiração pós-revelação
+    // Respiração suave e rotação sutil pós-revelação
     val infiniteTransition = rememberInfiniteTransition(label = "continuous_ambient")
     val ambientRotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(75000, easing = LinearEasing),
+            animation = tween(90000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
         label = "ambient_rot"
     )
     val ambientBreathing by infiniteTransition.animateFloat(
-        initialValue = 0.985f,
-        targetValue = 1.015f,
+        initialValue = 0.99f,
+        targetValue = 1.01f,
         animationSpec = infiniteRepeatable(
-            animation = tween(3200, easing = FastOutSlowInEasing),
+            animation = tween(3600, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "ambient_pulse"
@@ -103,8 +113,8 @@ fun WelcomeSplashScreen(
     LaunchedEffect(Unit) {
         launch {
             animTime.animateTo(
-                targetValue = 8.5f,
-                animationSpec = tween(durationMillis = 8500, easing = LinearEasing)
+                targetValue = 4.0f,
+                animationSpec = tween(durationMillis = 3800, easing = LinearEasing)
             )
             onFinish()
         }
@@ -112,48 +122,51 @@ fun WelcomeSplashScreen(
 
     val t = animTime.value
 
-    // Cálculos de progresso por fase conforme o vídeo:
-    // Fase 1: Desabrochar inicial da mandala e primeiras partículas (0s a 2.5s)
-    val mandalaBloom = (t / 2.2f).coerceIn(0f, 1f)
-    val mandalaScale = (0.3f + 0.7f * (t / 2.0f).coerceIn(0f, 1f)) * ambientBreathing
+    // Progresso das fases correspondendo aos frames do vídeo (escala ajustada para 4.0s):
+    // Fase 1: Desabrochar da mandala e primeiras partículas (0s a 1.4s)
+    val mandalaBloom = (t / 1.3f).coerceIn(0f, 1f)
+    val mandalaScale = (0.35f + 0.65f * (t / 1.2f).coerceIn(0f, 1f)) * ambientBreathing
 
-    // Fase 2: Fita de luz dourada orbitando em 3D (0.8s a 4.8s)
-    val ribbonProgress = ((t - 0.8f) / 3.6f).coerceIn(0f, 1f)
+    // Fase 2: Fita de luz dourada em órbita elíptica 3D (0.4s a 2.4s)
+    val ribbonProgress = ((t - 0.4f) / 1.8f).coerceIn(0f, 1f)
     val ribbonAlpha = when {
-        t < 0.8f -> 0f
-        t < 1.4f -> (t - 0.8f) / 0.6f
-        t > 4.2f -> (1f - (t - 4.2f) / 0.8f).coerceAtLeast(0f)
+        t < 0.4f -> 0f
+        t < 0.8f -> (t - 0.4f) / 0.4f
+        t > 2.2f -> (1f - (t - 2.2f) / 0.4f).coerceAtLeast(0f)
         else -> 1f
     }
 
-    // Fase 3: Wordmark SOLARIUM 3D branco e sombra (4.0s em diante)
-    val titleAlpha = if (t < 3.8f) {
-        (t / 3.8f).coerceIn(0f, 0.35f) // contorno dourado translúcido inicial
+    // Fase 3: Wordmark SOLARIUM (Letras vazadas -> Sólido 3D Branco)
+    val outlineAlpha = if (t < 2.0f) {
+        (t / 1.0f).coerceIn(0f, 0.45f)
     } else {
-        ((t - 3.8f) / 1.0f).coerceIn(0f, 1f)
+        (1f - (t - 2.0f) / 0.3f).coerceAtLeast(0f)
     }
-    val isTitleSolid = t >= 4.5f
+    val solidAlpha = ((t - 2.0f) / 0.4f).coerceIn(0f, 1f)
 
-    // Fase 4: Explosão de Raios Solares Dourados (5.4s a 7.5s+)
-    val sunburstProgress = ((t - 5.2f) / 1.6f).coerceIn(0f, 1f)
-    val sunburstAlpha = ((t - 5.2f) / 0.8f).coerceIn(0f, 1f)
-
-    // Fade-in dos elementos de texto secundários e botão
-    val footerAlpha = ((t - 5.8f) / 0.8f).coerceIn(0f, 1f)
+    // Fase 4: Explosão de Raios Solares (Sunburst) (2.5s a 3.8s)
+    val sunburstProgress = ((t - 2.4f) / 0.9f).coerceIn(0f, 1f)
+    val sunburstAlpha = ((t - 2.4f) / 0.5f).coerceIn(0f, 1f)
 
     Box(
         modifier = modifier
             .fillMaxSize()
+            // Fundo de estúdio exatamente como no vídeo: gradiente radial com vinheta suave
             .background(
                 Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFFAF8F3),
-                        Color(0xFFF3EFE7),
-                        Color(0xFFE5DFC),
-                        Color(0xFFD6CFC1)
+                        Color(0xFFE8E6E0), // Centro neutro claro
+                        Color(0xFFE2DFD9), // Meio linho suave
+                        Color(0xFFD1CDC4), // Transição
+                        Color(0xFFBDB7AC)  // Borda externa vinhetada
                     )
                 )
             )
+            .pointerInput(Unit) {
+                detectTapGestures {
+                    onFinish()
+                }
+            }
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -162,17 +175,50 @@ fun WelcomeSplashScreen(
             .testTag("welcome_splash_screen"),
         contentAlignment = Alignment.Center
     ) {
-        // 1. Partículas douradas e poeira estelar cintilante de fundo
+        // 1. Partículas douradas e pequenos fragmentos triangulares flutuantes
         GoldenDustBackground(animTime = t)
 
-        // 2. Composição da Mandala, Sunburst e Órbita Dourada
+        // 2. Botão "Pular ›" no canto superior direito para avanço instantâneo
+        Surface(
+            onClick = onFinish,
+            shape = RoundedCornerShape(20.dp),
+            color = Color(0x22FFFFFF),
+            contentColor = Color(0xFF3D362A),
+            border = BorderStroke(1.dp, Color(0x33B59A58)),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(top = 16.dp, end = 20.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
+            ) {
+                Text(
+                    text = "Pular",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.5.sp,
+                        letterSpacing = 0.5.sp
+                    )
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Pular introdução",
+                    modifier = Modifier.size(13.dp)
+                )
+            }
+        }
+
+        // 3. Composição Central: Mandala, Raios Solares, Órbita e Wordmark SOLARIUM
         Box(
             modifier = Modifier
                 .size(360.dp)
                 .scale(mandalaScale),
             contentAlignment = Alignment.Center
         ) {
-            // A. Raios Solares Radiantes (Sunburst) disparando por trás da mandala
+            // A. Raios Solares Radiantes (Sunburst) emanando por trás da mandala
             if (sunburstProgress > 0f) {
                 Canvas(
                     modifier = Modifier
@@ -186,7 +232,7 @@ fun WelcomeSplashScreen(
                 }
             }
 
-            // B. Mandala Solar Dourada com detalhes de filigrana
+            // B. Mandala Solar em Ouro Acetinado Antigo
             Canvas(
                 modifier = Modifier
                     .size(310.dp)
@@ -194,7 +240,7 @@ fun WelcomeSplashScreen(
             ) {
                 drawGoldenMandala(
                     bloomProgress = mandalaBloom,
-                    rotationDegrees = ambientRotation * 0.15f
+                    rotationDegrees = ambientRotation * 0.12f
                 )
             }
 
@@ -211,159 +257,125 @@ fun WelcomeSplashScreen(
                 }
             }
 
-            // D. Halo de Luz e Brilho Central
-            Canvas(modifier = Modifier.size(160.dp)) {
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFFFFF9E6).copy(alpha = 0.85f * titleAlpha),
-                            Color(0xFFFFDF88).copy(alpha = 0.40f * titleAlpha),
-                            Color.Transparent
-                        )
-                    )
-                )
-            }
-
-            // E. Wordmark Central "SOLARIUM"
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                if (isTitleSolid) {
-                    // Tipografia Tridimensional: Camada de Sombra Profunda + Texto Branco + Bisel Dourado
-                    Box(contentAlignment = Alignment.Center) {
-                        // Sombra projetada sobre a mandala
-                        Text(
-                            text = "SOLARIUM",
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                fontSize = 35.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 8.sp,
-                                fontFamily = FontFamily.Serif
-                            ),
-                            color = Color(0xFF6B5838).copy(alpha = 0.55f),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 4.dp, start = 2.dp)
-                        )
-
-                        // Texto Branco Puro em Alto Relevo
-                        Text(
-                            text = "SOLARIUM",
-                            style = MaterialTheme.typography.headlineLarge.copy(
-                                fontSize = 35.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 8.sp,
-                                fontFamily = FontFamily.Serif
-                            ),
-                            color = Color(0xFFFFFFFF),
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.shadow(
-                                elevation = 6.dp,
-                                shape = RoundedCornerShape(4.dp),
-                                ambientColor = Color(0xFFC59E3F),
-                                spotColor = Color(0xFF9E7B28)
+            // D. Halo de Luz suave no centro
+            if (t >= 3.5f) {
+                Canvas(modifier = Modifier.size(170.dp)) {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFFAF7EE).copy(alpha = 0.70f * solidAlpha),
+                                Color(0xFFE8D7A8).copy(alpha = 0.30f * solidAlpha),
+                                Color.Transparent
                             )
                         )
-                    }
-                } else {
-                    // Estado Inicial: Letras em Fio de Ouro Translúcido
+                    )
+                }
+            }
+
+            // E. Wordmark Central "SOLARIUM" (Fiel à tipografia e 3D do vídeo)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            ) {
+                // Estado 1: Letras vazadas em fio de ouro fino (0s a ~4.5s)
+                if (outlineAlpha > 0f) {
                     Text(
                         text = "SOLARIUM",
                         style = MaterialTheme.typography.headlineLarge.copy(
-                            fontSize = 35.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.SemiBold,
                             letterSpacing = 8.sp,
-                            fontFamily = FontFamily.Serif
+                            fontFamily = FontFamily.SansSerif
                         ),
-                        color = Color(0xFFB8933A).copy(alpha = titleAlpha),
+                        color = Color(0xFFB59A58).copy(alpha = outlineAlpha),
                         textAlign = TextAlign.Center
                     )
+                }
+
+                // Estado 2: Letras brancas 3D sólidas com sombra projetada (4.2s em diante)
+                if (solidAlpha > 0f) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.alpha(solidAlpha)
+                    ) {
+                        // Sombra projetada para baixo e direita sobre a mandala
+                        Text(
+                            text = "SOLARIUM",
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontSize = 36.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 8.sp,
+                                fontFamily = FontFamily.SansSerif
+                            ),
+                            color = Color(0xFF433B2E).copy(alpha = 0.65f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 4.dp, start = 2.5.dp)
+                        )
+
+                        // Sombra secundária difusa
+                        Text(
+                            text = "SOLARIUM",
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontSize = 36.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 8.sp,
+                                fontFamily = FontFamily.SansSerif
+                            ),
+                            color = Color(0xFF635845).copy(alpha = 0.35f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 2.dp, start = 1.dp)
+                        )
+
+                        // Letras Brancas Puras em Alto Relevo
+                        Text(
+                            text = "SOLARIUM",
+                            style = MaterialTheme.typography.headlineLarge.copy(
+                                fontSize = 36.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 8.sp,
+                                fontFamily = FontFamily.SansSerif
+                            ),
+                            color = Color(0xFFFFFFFF),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
 
-        // 3. Rodapé Nobre com Subtítulo, Boas-Vindas e Botão de Entrada
-        Column(
+        // 4. Botão Inferior "Entrar no Guia" (Interativo, com feedback tátil e touch target de 48dp)
+        Surface(
+            onClick = onFinish,
+            shape = RoundedCornerShape(24.dp),
+            color = Color(0xFFB59A58),
+            contentColor = Color(0xFF221A0E),
+            shadowElevation = 4.dp,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 36.dp, start = 24.dp, end = 24.dp)
-                .alpha(footerAlpha),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(bottom = 36.dp)
+                .testTag("launch_btn_enter")
         ) {
-            // Subtítulo Oficial
-            Text(
-                text = "ESTÂNCIA & REFÚGIO • SÃO LOURENÇO, MG",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontSize = 11.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 2.4.sp
-                ),
-                color = Color(0xFF9C7438),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // Frase de Acolhimento
-            Text(
-                text = "Bem-vindos à sua casa na Mantiqueira",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 15.sp,
-                    fontStyle = FontStyle.Italic,
-                    fontFamily = FontFamily.Serif
-                ),
-                color = Color(0xFF5A4D3E),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Botão Dourado Elegante para Entrar
-            Button(
-                onClick = onFinish,
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFC59E3F),
-                    contentColor = Color(0xFF241B0E)
-                ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
-                modifier = Modifier
-                    .height(46.dp)
-                    .testTag("launch_btn_enter")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 13.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Text(
-                        text = "Entrar no Guia da Casa",
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            letterSpacing = 0.5.sp
-                        )
+                Text(
+                    text = "Entrar no Guia",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        letterSpacing = 0.5.sp,
+                        fontFamily = FontFamily.SansSerif
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "Entrar",
-                        modifier = Modifier.size(17.dp)
-                    )
-                }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Entrar no Guia da Casa",
+                    modifier = Modifier.size(16.dp)
+                )
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = "Toque em qualquer lugar para pular",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color(0xFF8F8271).copy(alpha = 0.85f)
-            )
         }
     }
 }
@@ -379,11 +391,11 @@ private fun DrawScope.drawGoldenMandala(
     val cy = size.height / 2f
     val maxRadius = (size.width / 2f) * 0.95f * bloomProgress
 
-    // Cores metálicas nobres de ouro puro
-    val goldDeep = Color(0xFF9E7B28)
-    val goldMain = Color(0xFFC9A23E)
-    val goldLight = Color(0xFFE8C86E)
-    val goldBright = Color(0xFFFFF0B8)
+    // Cores metálicas nobres de ouro acetinado antigo (extraídas fielmente do vídeo)
+    val goldDeep = Color(0xFF8C7338)
+    val goldMain = Color(0xFFB59A58)
+    val goldLight = Color(0xFFCCB477)
+    val goldBright = Color(0xFFEADAA4)
 
     val baseAngleRad = Math.toRadians(rotationDegrees.toDouble()).toFloat()
 
@@ -622,15 +634,15 @@ private fun DrawScope.drawGoldenOrbitRibbon(
         val alpha = (1f - frac) * (1f - frac)
         val radius = (4.5f * (1f - frac * 0.7f)).dp.toPx()
 
-        // Núcleo brilhante branco-dourado
+        // Núcleo brilhante branco puro
         drawCircle(
-            color = Color(0xFFFFFBE8).copy(alpha = alpha * 0.9f),
+            color = Color.White.copy(alpha = alpha * 0.95f),
             radius = radius * 0.6f,
             center = Offset(px, py)
         )
         // Halo dourado envolvente
         drawCircle(
-            color = Color(0xFFFFD54F).copy(alpha = alpha * 0.55f),
+            color = Color(0xFFE5C46E).copy(alpha = alpha * 0.60f),
             radius = radius * 1.5f,
             center = Offset(px, py)
         )
@@ -645,8 +657,8 @@ private fun DrawScope.drawGoldenOrbitRibbon(
         brush = Brush.radialGradient(
             colors = listOf(
                 Color.White,
-                Color(0xFFFFF0B0),
-                Color(0xFFFFC107).copy(alpha = 0.5f),
+                Color(0xFFFFF2C2),
+                Color(0xFFE0BE68).copy(alpha = 0.5f),
                 Color.Transparent
             ),
             center = Offset(headX, headY),
@@ -667,18 +679,18 @@ private fun DrawScope.drawSunburstRays(
     val cx = size.width / 2f
     val cy = size.height / 2f
     val baseRadius = size.width * 0.22f
-    val maxRayLength = (size.width * 0.58f * progress * pulse)
+    val maxRayLength = (size.width * 0.72f * progress * pulse)
 
-    val rayCount = 24
+    val rayCount = 32
     for (i in 0 until rayCount) {
         val angle = (i * 2 * PI / rayCount).toFloat()
         val isMajor = i % 2 == 0
 
-        val rayLength = if (isMajor) maxRayLength else maxRayLength * 0.70f
+        val rayLength = if (isMajor) maxRayLength else maxRayLength * 0.62f
         val tipX = cx + (baseRadius + rayLength) * cos(angle)
         val tipY = cy + (baseRadius + rayLength) * sin(angle)
 
-        val halfWidthAngle = (PI / (rayCount * 3.5f)).toFloat()
+        val halfWidthAngle = (PI / (rayCount * 3.8f)).toFloat()
         val b1X = cx + baseRadius * cos(angle - halfWidthAngle)
         val b1Y = cy + baseRadius * sin(angle - halfWidthAngle)
         val b2X = cx + baseRadius * cos(angle + halfWidthAngle)
@@ -695,9 +707,9 @@ private fun DrawScope.drawSunburstRays(
             path = rayPath,
             brush = Brush.linearGradient(
                 colors = listOf(
-                    Color(0xFFFFDF7A).copy(alpha = 0.85f),
-                    Color(0xFFE5B036).copy(alpha = 0.50f),
-                    Color(0xFFC59E3F).copy(alpha = 0.15f),
+                    Color(0xFFF7E298).copy(alpha = 0.85f),
+                    Color(0xFFD6AF52).copy(alpha = 0.45f),
+                    Color(0xFFB58E3A).copy(alpha = 0.12f),
                     Color.Transparent
                 ),
                 start = Offset(cx, cy),
@@ -738,7 +750,7 @@ private fun GoldenDustBackground(animTime: Float) {
             val alpha = (0.25f + 0.55f * sin(animTime * 1.8f + p.angle)).coerceIn(0.1f, 0.85f)
 
             if (p.isShard) {
-                // Fragmento triangular dourado
+                // Fragmento triangular dourado metálico acetinado
                 val shardSize = p.size.dp.toPx()
                 val shardPath = Path().apply {
                     moveTo(px, py - shardSize)
@@ -748,13 +760,13 @@ private fun GoldenDustBackground(animTime: Float) {
                 }
                 drawPath(
                     path = shardPath,
-                    color = Color(0xFFE2C26E).copy(alpha = alpha),
+                    color = Color(0xFFBFA567).copy(alpha = alpha * 0.85f),
                     style = Fill
                 )
             } else {
                 // Ponto de luz cintilante
                 drawCircle(
-                    color = Color(0xFFFFF0B8).copy(alpha = alpha),
+                    color = Color(0xFFE8D6A6).copy(alpha = alpha * 0.85f),
                     radius = p.size.dp.toPx() * 0.6f,
                     center = Offset(px, py)
                 )

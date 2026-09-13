@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -106,20 +105,12 @@ fun ChatSupportScreen(
             val encodedMsg = URLEncoder.encode(fullText, "UTF-8")
             val whatsappUri = Uri.parse("https://api.whatsapp.com/send?phone=$phone&text=$encodedMsg")
             val intent = Intent(Intent.ACTION_VIEW, whatsappUri)
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                throw Exception("Activity not found")
-            }
+            context.startActivity(intent)
         } catch (e: Exception) {
             onFeedback("Não foi possível abrir o WhatsApp. Tentando ligação...")
             try {
                 val telIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${HouseRepository.HOST_PHONE}"))
-                if (telIntent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(telIntent)
-                } else {
-                    throw Exception("Activity not found")
-                }
+                context.startActivity(telIntent)
             } catch (ex: Exception) {
                 onFeedback("WhatsApp da proprietária: ${HouseRepository.HOST_PHONE_DISPLAY}")
             }
@@ -131,11 +122,7 @@ fun ChatSupportScreen(
             val intent = Intent(Intent.ACTION_DIAL).apply {
                 data = Uri.parse("tel:${HouseRepository.HOST_PHONE}")
             }
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                throw Exception("Activity not found")
-            }
+            context.startActivity(intent)
         } catch (e: Exception) {
             onFeedback("Telefone da proprietária: ${HouseRepository.HOST_PHONE_DISPLAY}")
         }
@@ -147,437 +134,368 @@ fun ChatSupportScreen(
             .imePadding()
             .testTag("chat_support_screen")
     ) {
-        ChatHeader(
-            onClearChat = onClearChat,
-            onOpenHostWhatsApp = { openHostWhatsApp() },
-            onOpenHostContact = { openHostContact() }
-        )
-
-        WhatsAppDirectSection(
-            inputText = inputText,
-            onOpenHostWhatsApp = ::openHostWhatsApp
-        )
-
-        MessagesList(
-            messages = messages,
-            isLoading = isLoading,
-            listState = listState,
-            onCopyMessage = ::copyMessage,
-            onOpenHostWhatsApp = ::openHostWhatsApp,
-            modifier = Modifier.weight(1f)
-        )
-
-        QuickSuggestions(
-            quickPrompts = quickPrompts,
-            onSendMessage = onSendMessage
-        )
-
-        ChatInputField(
-            inputText = inputText,
-            onInputTextChanged = { inputText = it },
-            isLoading = isLoading,
-            onSendMessage = { text ->
-                val textToSend = text
-                inputText = ""
-                onSendMessage(textToSend)
-            },
-            onOpenHostWhatsApp = { text ->
-                openHostWhatsApp(text)
-                inputText = ""
-            }
-        )
-    }
-}
-
-@Composable
-private fun ChatHeader(
-    onClearChat: () -> Unit,
-    onOpenHostWhatsApp: () -> Unit,
-    onOpenHostContact: () -> Unit
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        // Chat Header with status & clear button
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 2.dp,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(42.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(42.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.SupportAgent,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Concierge Digital da Casa",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0xFF2B8A3E),
+                                modifier = Modifier.size(8.dp)
+                            ) {}
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Online • Respostas Imediatas",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Botão rápido de WhatsApp no Topo
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color(0xFF25D366).copy(alpha = 0.15f),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable { openHostWhatsApp() }
+                            .testTag("chat_header_whatsapp_button")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Chat,
+                                contentDescription = "WhatsApp da Valéria",
+                                tint = Color(0xFF25D366),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "WhatsApp",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = Color(0xFF1B7A3C)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    IconButton(
+                        onClick = { openHostContact() },
+                        modifier = Modifier.testTag("call_host_button")
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.SupportAgent,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                            imageVector = Icons.Default.Call,
+                            contentDescription = "Ligar para Valéria",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onClearChat,
+                        modifier = Modifier.testTag("clear_chat_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Limpar conversa",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(
-                        text = "Concierge Digital da Casa",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            }
+        }
+
+        // Dedicated Section Card for Direct WhatsApp Query to the Host
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 1.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 6.dp)
+        ) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFE7F7ED)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("whatsapp_direct_section_card")
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFF25D366),
+                        modifier = Modifier.size(38.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Chat,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Falar com a Anfitriã Valéria",
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = Color(0xFF0F5132)
+                        )
+                        Text(
+                            text = "WhatsApp: ${HouseRepository.HOST_PHONE_DISPLAY}",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = Color(0xFF155724)
+                        )
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF25D366),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable {
+                                if (inputText.isNotBlank()) {
+                                    openHostWhatsApp(inputText)
+                                } else {
+                                    openHostWhatsApp()
+                                }
+                            }
+                            .testTag("open_host_whatsapp_button")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (inputText.isNotBlank()) "Enviar Pergunta" else "Abrir Zap",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 11.sp
+                                ),
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Messages List
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(messages, key = { it.id }) { msg ->
+                ChatBubble(
+                    message = msg,
+                    onCopy = { copyMessage(msg.text) },
+                    onSendToWhatsApp = { openHostWhatsApp(msg.text) }
+                )
+            }
+
+            if (isLoading) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Surface(
                             shape = CircleShape,
-                            color = Color(0xFF2B8A3E),
-                            modifier = Modifier.size(8.dp)
-                        ) {}
-                        Spacer(modifier = Modifier.width(6.dp))
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Online • Respostas Imediatas",
-                            style = MaterialTheme.typography.labelSmall,
+                            text = "Consultando o manual da casa...",
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
+        }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Botão rápido de WhatsApp no Topo
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFF25D366).copy(alpha = 0.15f),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable { onOpenHostWhatsApp() }
-                        .testTag("chat_header_whatsapp_button")
+        // Quick Suggestions Horizontal Chips
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)) {
+                Text(
+                    text = "Dúvidas Frequentes Rápidas:",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+                )
+
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Chat,
-                            contentDescription = "WhatsApp da Valéria",
-                            tint = Color(0xFF25D366),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "WhatsApp",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF1B7A3C)
-                        )
+                    items(quickPrompts) { prompt ->
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable {
+                                    onSendMessage(prompt)
+                                }
+                        ) {
+                            Text(
+                                text = prompt,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                            )
+                        }
                     }
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                IconButton(
-                    onClick = onOpenHostContact,
-                    modifier = Modifier.testTag("call_host_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Call,
-                        contentDescription = "Ligar para Valéria",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                IconButton(
-                    onClick = onClearChat,
-                    modifier = Modifier.testTag("clear_chat_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Limpar conversa",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
         }
-    }
-}
 
-@Composable
-private fun WhatsAppDirectSection(
-    inputText: String,
-    onOpenHostWhatsApp: (String?) -> Unit
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 1.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 6.dp)
-    ) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFE7F7ED)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("whatsapp_direct_section_card")
+        // Input Field and Send Button
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 4.dp,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                OutlinedTextField(
+                    value = inputText,
+                    onValueChange = { inputText = it },
+                    placeholder = { Text("Digite sua pergunta sobre a casa...") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("chat_input_field"),
+                    shape = RoundedCornerShape(24.dp),
+                    singleLine = false,
+                    maxLines = 3,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.background,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                // Direct Ask on Host WhatsApp button
                 Surface(
                     shape = CircleShape,
                     color = Color(0xFF25D366),
-                    modifier = Modifier.size(38.dp)
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            openHostWhatsApp(inputText)
+                            inputText = ""
+                        }
+                        .testTag("chat_input_whatsapp_button")
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Chat,
-                            contentDescription = null,
+                            contentDescription = "Perguntar no WhatsApp da Proprietária",
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Falar com a Anfitriã Valéria",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = Color(0xFF0F5132)
-                    )
-                    Text(
-                        text = "WhatsApp: ${HouseRepository.HOST_PHONE_DISPLAY}",
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = Color(0xFF155724)
-                    )
-                }
+                Spacer(modifier = Modifier.width(6.dp))
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFF25D366),
+                    shape = CircleShape,
+                    color = if (inputText.isNotBlank() && !isLoading) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable {
-                            if (inputText.isNotBlank()) {
-                                onOpenHostWhatsApp(inputText)
-                            } else {
-                                onOpenHostWhatsApp(null)
-                            }
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .clickable(enabled = inputText.isNotBlank() && !isLoading) {
+                            val textToSend = inputText
+                            inputText = ""
+                            onSendMessage(textToSend)
                         }
-                        .testTag("open_host_whatsapp_button")
+                        .testTag("chat_send_button")
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = if (inputText.isNotBlank()) "Enviar Pergunta" else "Abrir Zap",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
-                            ),
-                            color = Color.White
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Enviar mensagem",
+                            tint = if (inputText.isNotBlank() && !isLoading) Color.White
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun MessagesList(
-    messages: List<ChatMessage>,
-    isLoading: Boolean,
-    listState: LazyListState,
-    onCopyMessage: (String) -> Unit,
-    onOpenHostWhatsApp: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        state = listState,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        items(messages, key = { it.id }) { msg ->
-            ChatBubble(
-                message = msg,
-                onCopy = { onCopyMessage(msg.text) },
-                onSendToWhatsApp = { onOpenHostWhatsApp(msg.text) }
-            )
-        }
-
-        if (isLoading) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.size(28.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Consultando o manual da casa...",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuickSuggestions(
-    quickPrompts: List<String>,
-    onSendMessage: (String) -> Unit
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)) {
-            Text(
-                text = "Dúvidas Frequentes Rápidas:",
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
-            )
-
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(quickPrompts) { prompt ->
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(14.dp))
-                            .clickable {
-                                onSendMessage(prompt)
-                            }
-                    ) {
-                        Text(
-                            text = prompt,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ChatInputField(
-    inputText: String,
-    onInputTextChanged: (String) -> Unit,
-    isLoading: Boolean,
-    onSendMessage: (String) -> Unit,
-    onOpenHostWhatsApp: (String) -> Unit
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 4.dp,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = inputText,
-                onValueChange = onInputTextChanged,
-                placeholder = { Text("Digite sua pergunta sobre a casa...") },
-                modifier = Modifier
-                    .weight(1f)
-                    .testTag("chat_input_field"),
-                shape = RoundedCornerShape(24.dp),
-                singleLine = false,
-                maxLines = 3,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.background,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary
-                )
-            )
-
-            Spacer(modifier = Modifier.width(6.dp))
-
-            // Direct Ask on Host WhatsApp button
-            Surface(
-                shape = CircleShape,
-                color = Color(0xFF25D366),
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .clickable {
-                        onOpenHostWhatsApp(inputText)
-                    }
-                    .testTag("chat_input_whatsapp_button")
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Chat,
-                        contentDescription = "Perguntar no WhatsApp da Proprietária",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(6.dp))
-
-            Surface(
-                shape = CircleShape,
-                color = if (inputText.isNotBlank() && !isLoading) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape)
-                    .clickable(enabled = inputText.isNotBlank() && !isLoading) {
-                        onSendMessage(inputText)
-                    }
-                    .testTag("chat_send_button")
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Enviar mensagem",
-                        tint = if (inputText.isNotBlank() && !isLoading) Color.White
-                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.size(20.dp)
-                    )
                 }
             }
         }

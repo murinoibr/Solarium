@@ -172,11 +172,7 @@ fun InteractiveMapScreen(
             val intent = Intent(Intent.ACTION_VIEW, uri).apply {
                 setPackage("com.google.android.apps.maps")
             }
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                throw Exception("Google Maps not found")
-            }
+            context.startActivity(intent)
         } catch (_: Exception) {
             // Fallback para navegador web com a URL oficial do Google Maps
             val webUri = if (!location.googleMapsUrl.isNullOrBlank()) {
@@ -185,9 +181,7 @@ fun InteractiveMapScreen(
                 Uri.parse("https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}")
             }
             val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-            if (webIntent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(webIntent)
-            }
+            context.startActivity(webIntent)
         }
     }
 
@@ -200,19 +194,13 @@ fun InteractiveMapScreen(
             val intent = Intent(Intent.ACTION_VIEW, uri).apply {
                 setPackage("com.google.android.apps.maps")
             }
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                throw Exception("Google Maps not found")
-            }
+            context.startActivity(intent)
         } catch (_: Exception) {
             val webUri = Uri.parse(
                 "https://www.google.com/maps/dir/?api=1&origin=-22.112678,-45.056412&destination=${location.latitude},${location.longitude}&travelmode=$travelMode"
             )
             val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-            if (webIntent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(webIntent)
-            }
+            context.startActivity(webIntent)
         }
     }
 
@@ -226,11 +214,7 @@ fun InteractiveMapScreen(
     fun callPhoneNumber(phone: String) {
         try {
             val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${phone.replace(Regex("[^0-9+]"), "")}"))
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                throw Exception("Dialer not found")
-            }
+            context.startActivity(intent)
         } catch (_: Exception) {
             onFeedback("Não foi possível abrir o discador.")
         }
