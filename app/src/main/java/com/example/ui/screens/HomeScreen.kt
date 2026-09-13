@@ -765,6 +765,7 @@ private fun openWhatsApp(context: Context, phoneNumber: String, message: String)
         val cleanNumber = phoneNumber.replace(Regex("[^0-9]"), "")
         val uri = Uri.parse("https://api.whatsapp.com/send?phone=$cleanNumber&text=${Uri.encode(message)}")
         val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage("com.whatsapp")
         context.startActivity(intent)
     } catch (_: Exception) {
         // Fallback para discador se WhatsApp não estiver instalado
