@@ -28,9 +28,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
@@ -200,7 +200,7 @@ fun ChatSupportScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Chat,
+                                imageVector = Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = "WhatsApp da Valéria",
                                 tint = Color(0xFF25D366),
                                 modifier = Modifier.size(16.dp)
@@ -270,7 +270,7 @@ fun ChatSupportScreen(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                imageVector = Icons.Default.Chat,
+                                imageVector = Icons.AutoMirrored.Filled.Chat,
                                 contentDescription = null,
                                 tint = Color.White,
                                 modifier = Modifier.size(20.dp)
@@ -463,7 +463,7 @@ fun ChatSupportScreen(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.Chat,
+                            imageVector = Icons.AutoMirrored.Filled.Chat,
                             contentDescription = "Perguntar no WhatsApp da Proprietária",
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
@@ -577,7 +577,7 @@ private fun ChatBubble(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    Icons.Default.Chat,
+                                    Icons.AutoMirrored.Filled.Chat,
                                     contentDescription = "Enviar esta pergunta ao WhatsApp da dona",
                                     tint = Color.White,
                                     modifier = Modifier.size(12.dp)
@@ -604,7 +604,7 @@ private fun ChatBubble(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    Icons.Default.Chat,
+                                    Icons.AutoMirrored.Filled.Chat,
                                     contentDescription = "Tirar dúvida com a dona",
                                     tint = Color(0xFF1B7A3C),
                                     modifier = Modifier.size(12.dp)

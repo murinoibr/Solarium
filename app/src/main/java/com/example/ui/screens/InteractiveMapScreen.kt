@@ -10,13 +10,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,6 +36,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
@@ -101,7 +105,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -114,6 +117,8 @@ import com.example.data.model.FloorPlanPoint
 import com.example.data.model.LocationCategory
 import com.example.data.model.MapLocation
 import com.example.data.model.MapViewMode
+import com.example.ui.components.GoogleMapView
+import com.example.ui.components.isGoogleMapsSdkConfigured
 import java.util.Locale
 import kotlin.math.abs
 
@@ -144,7 +149,11 @@ fun InteractiveMapScreen(
 ) {
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
-    var selectedTab by remember { mutableIntStateOf(0) } // 0 = Mapa Interativo, 1 = Lista Detalhada
+    var selectedTab by remember { mutableIntStateOf(0) } // 0 = Mapa Interativo, 1 = Croqui Ilustrado, 2 = Lista de Locais
+
+    val categoryCounts = remember(locations) {
+        locations.groupingBy { it.category }.eachCount()
+    }
 
     val filteredLocations = remember(locations, activeCategory, searchQuery) {
         var list = locations
@@ -157,11 +166,19 @@ fun InteractiveMapScreen(
                 loc.title.lowercase(Locale.ROOT).contains(q) ||
                     loc.address.lowercase(Locale.ROOT).contains(q) ||
                     loc.description.lowercase(Locale.ROOT).contains(q) ||
+                    loc.category.label.lowercase(Locale.ROOT).contains(q) ||
                     loc.tags.any { it.lowercase(Locale.ROOT).contains(q) } ||
                     (loc.plusCode?.lowercase(Locale.ROOT)?.contains(q) == true)
             }
         }
         list
+    }
+
+    // Limpa a seleção caso o local selecionado não pertença à categoria filtrada ou à busca atual
+    androidx.compose.runtime.LaunchedEffect(filteredLocations) {
+        if (selectedLocation != null && filteredLocations.none { it.id == selectedLocation.id }) {
+            onSelectLocation(null)
+        }
     }
 
     // Ações do Google Maps
@@ -263,7 +280,7 @@ fun InteractiveMapScreen(
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = "Google Maps",
+                                            text = "Mapa Interativo",
                                             style = MaterialTheme.typography.labelSmall.copy(
                                                 fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold
@@ -342,7 +359,7 @@ fun InteractiveMapScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Alternador entre "Mapa Gráfico" e "Lista com Google Maps"
+                    // Alternador entre "Mapa", "Croqui" e "Locais"
                     TabRow(
                         selectedTabIndex = selectedTab,
                         containerColor = Color.Transparent,
@@ -354,9 +371,9 @@ fun InteractiveMapScreen(
                             onClick = { selectedTab = 0 },
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Mapa Interativo", fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal)
+                                    Icon(Icons.Default.Place, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Mapa", fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal)
                                 }
                             }
                         )
@@ -365,9 +382,20 @@ fun InteractiveMapScreen(
                             onClick = { selectedTab = 1 },
                             text = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.List, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text("Lista de Locais", fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal)
+                                    Icon(Icons.Default.Explore, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Croqui", fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal)
+                                }
+                            }
+                        )
+                        Tab(
+                            selected = selectedTab == 2,
+                            onClick = { selectedTab = 2 },
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("Locais", fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal)
                                 }
                             }
                         )
@@ -375,7 +403,7 @@ fun InteractiveMapScreen(
 
                     Spacer(modifier = Modifier.height(6.dp))
 
-                    // Chips de Categorias
+                    // Chips de Categorias por tipo com ícones e contadores
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(horizontal = 2.dp)
@@ -384,21 +412,51 @@ fun InteractiveMapScreen(
                             FilterChip(
                                 selected = activeCategory == null,
                                 onClick = { onSelectCategory(null) },
-                                label = { Text("Todos", fontSize = 12.sp) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Place,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = "Todos (${locations.size})",
+                                        fontSize = 12.sp,
+                                        fontWeight = if (activeCategory == null) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = Color.White
+                                    selectedLabelColor = Color.White,
+                                    selectedLeadingIconColor = Color.White
                                 )
                             )
                         }
                         items(LocationCategory.entries.toTypedArray()) { cat ->
+                            val count = categoryCounts[cat] ?: 0
+                            val catColor = getCategoryColor(cat)
                             FilterChip(
                                 selected = activeCategory == cat,
-                                onClick = { onSelectCategory(cat) },
-                                label = { Text(cat.label, fontSize = 12.sp) },
+                                onClick = { onSelectCategory(if (activeCategory == cat) null else cat) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = getCategoryIcon(cat),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = "${cat.label} ($count)",
+                                        fontSize = 12.sp,
+                                        fontWeight = if (activeCategory == cat) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    selectedLabelColor = Color.White
+                                    selectedContainerColor = catColor,
+                                    selectedLabelColor = Color.White,
+                                    selectedLeadingIconColor = Color.White
                                 )
                             )
                         }
@@ -406,14 +464,77 @@ fun InteractiveMapScreen(
                 }
             }
 
-            // Conteúdo: ou o Canvas do Mapa Gráfico ou a Lista Detalhada
-            if (selectedTab == 0) {
-                // Modo Mapa Visual com Canvas
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                ) {
+            // Conteúdo: Google Maps SDK, Canvas do Croqui Ilustrado ou Lista Detalhada
+            when (selectedTab) {
+                0 -> {
+                    // Modo Google Maps SDK com marcadores personalizados categorizados
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
+                        GoogleMapView(
+                            locations = filteredLocations,
+                            selectedLocation = selectedLocation,
+                            onSelectLocation = { onSelectLocation(it) },
+                            onOpenGoogleMaps = { openGoogleMaps(it) },
+                            onNavigateGps = { openGpsNavigation(it, "driving") },
+                            onNavigateWalk = { openGpsNavigation(it, "walking") },
+                            onCallPhone = { callPhoneNumber(it) },
+                            onSwitchToCroqui = { selectedTab = 1 },
+                            modifier = Modifier.fillMaxSize()
+                        )
+
+                        // Indicador de Categoria Ativa Flutuante no Google Maps
+                        if (activeCategory != null) {
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = getCategoryColor(activeCategory),
+                                shadowElevation = 4.dp,
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 10.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(start = 12.dp, end = 6.dp, top = 4.dp, bottom = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = getCategoryIcon(activeCategory),
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "${activeCategory.label} (${filteredLocations.size})",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    IconButton(
+                                        onClick = { onSelectCategory(null) },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Limpar filtro",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                1 -> {
+                    // Modo Croqui Ilustrado com Canvas
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
                     NeighborhoodMapCanvas(
                         locations = filteredLocations,
                         selectedLocation = selectedLocation,
@@ -421,22 +542,105 @@ fun InteractiveMapScreen(
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // Legenda no Canto Superior Direito
+                    // Indicador de Categoria Ativa Flutuante no Mapa
+                    if (activeCategory != null) {
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = getCategoryColor(activeCategory),
+                            shadowElevation = 4.dp,
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = 10.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(start = 12.dp, end = 6.dp, top = 4.dp, bottom = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = getCategoryIcon(activeCategory),
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "${activeCategory.label} (${filteredLocations.size})",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                IconButton(
+                                    onClick = { onSelectCategory(null) },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Limpar filtro",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Legenda no Canto Superior Direito com Categorias Interativas
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
                         shadowElevation = 3.dp,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(12.dp)
+                            .padding(10.dp)
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
-                            LegendRow(color = Color(0xFFC85A32), label = "Sua Casa (Ramon)")
-                            LegendRow(color = Color(0xFFE03131), label = "Emergência (Hospital/UPA)")
-                            LegendRow(color = Color(0xFFE8590C), label = "Bares & Gastronomia")
-                            LegendRow(color = Color(0xFF1C7ED6), label = "Pontos Turísticos")
-                            LegendRow(color = Color(0xFF7048E8), label = "Trem / Eubiose")
-                            LegendRow(color = Color(0xFF1098AD), label = "Ônibus & Transporte")
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text(
+                                text = "CATEGORIAS",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 8.5.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    letterSpacing = 0.5.sp
+                                ),
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 2.dp, start = 4.dp)
+                            )
+                            LegendRow(
+                                color = Color(0xFFE8590C),
+                                label = "Bares & Restaurantes",
+                                isSelected = activeCategory == LocationCategory.FOOD,
+                                onClick = { onSelectCategory(if (activeCategory == LocationCategory.FOOD) null else LocationCategory.FOOD) }
+                            )
+                            LegendRow(
+                                color = Color(0xFF1C7ED6),
+                                label = "Pontos Turísticos",
+                                isSelected = activeCategory == LocationCategory.ATTRACTION,
+                                onClick = { onSelectCategory(if (activeCategory == LocationCategory.ATTRACTION) null else LocationCategory.ATTRACTION) }
+                            )
+                            LegendRow(
+                                color = Color(0xFFE03131),
+                                label = "Hospitais & Saúde",
+                                isSelected = activeCategory == LocationCategory.EMERGENCY,
+                                onClick = { onSelectCategory(if (activeCategory == LocationCategory.EMERGENCY) null else LocationCategory.EMERGENCY) }
+                            )
+                            LegendRow(
+                                color = Color(0xFFC85A32),
+                                label = "A Casa (Estância)",
+                                isSelected = activeCategory == LocationCategory.HOUSE,
+                                onClick = { onSelectCategory(if (activeCategory == LocationCategory.HOUSE) null else LocationCategory.HOUSE) }
+                            )
+                            LegendRow(
+                                color = Color(0xFF2B8A3E),
+                                label = "Mercados & Serviços",
+                                isSelected = activeCategory == LocationCategory.SERVICES,
+                                onClick = { onSelectCategory(if (activeCategory == LocationCategory.SERVICES) null else LocationCategory.SERVICES) }
+                            )
+                            LegendRow(
+                                color = Color(0xFF1098AD),
+                                label = "Transporte & Ônibus",
+                                isSelected = activeCategory == LocationCategory.TRANSPORT,
+                                onClick = { onSelectCategory(if (activeCategory == LocationCategory.TRANSPORT) null else LocationCategory.TRANSPORT) }
+                            )
                         }
                     }
 
@@ -503,8 +707,9 @@ fun InteractiveMapScreen(
                         }
                     }
                 }
-            } else {
-                // Modo Lista Detalhada com Coordenadas e Google Maps
+            }
+            else -> {
+                // Modo Lista Detalhada categorizada com Coordenadas e Google Maps
                 LazyColumn(
                     modifier = Modifier
                         .weight(1f)
@@ -512,24 +717,61 @@ fun InteractiveMapScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(filteredLocations) { loc ->
-                        LocationListItemCard(
-                            location = loc,
-                            onOpenMaps = { openGoogleMaps(loc) },
-                            onNavigateGps = { openGpsNavigation(loc, "driving") },
-                            onNavigateWalk = { openGpsNavigation(loc, "walking") },
-                            onCopyCoords = { copyToClipboard("Coordenadas", "${loc.latitude}, ${loc.longitude}") },
-                            onCopyPlusCode = { loc.plusCode?.let { copyToClipboard("Plus Code", it) } },
-                            onCall = { loc.phone?.let { callPhoneNumber(it) } }
-                        )
+                    if (activeCategory == null && searchQuery.isBlank()) {
+                        // Exibe todas as categorias organizadas por tipo com cabeçalhos visuais
+                        LocationCategory.entries.forEach { cat ->
+                            val itemsInCat = filteredLocations.filter { it.category == cat }
+                            if (itemsInCat.isNotEmpty()) {
+                                item(key = "header_${cat.name}") {
+                                    CategorySectionHeader(
+                                        category = cat,
+                                        count = itemsInCat.size,
+                                        onFilterClick = { onSelectCategory(cat) }
+                                    )
+                                }
+                                items(itemsInCat, key = { it.id }) { loc ->
+                                    LocationListItemCard(
+                                        location = loc,
+                                        onOpenMaps = { openGoogleMaps(loc) },
+                                        onNavigateGps = { openGpsNavigation(loc, "driving") },
+                                        onNavigateWalk = { openGpsNavigation(loc, "walking") },
+                                        onCopyCoords = { copyToClipboard("Coordenadas", "${loc.latitude}, ${loc.longitude}") },
+                                        onCopyPlusCode = { loc.plusCode?.let { copyToClipboard("Plus Code", it) } },
+                                        onCall = { loc.phone?.let { callPhoneNumber(it) } }
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        if (activeCategory != null) {
+                            item(key = "active_banner") {
+                                ActiveCategoryBanner(
+                                    category = activeCategory,
+                                    count = filteredLocations.size,
+                                    onClear = { onSelectCategory(null) }
+                                )
+                            }
+                        }
+                        items(filteredLocations, key = { it.id }) { loc ->
+                            LocationListItemCard(
+                                location = loc,
+                                onOpenMaps = { openGoogleMaps(loc) },
+                                onNavigateGps = { openGpsNavigation(loc, "driving") },
+                                onNavigateWalk = { openGpsNavigation(loc, "walking") },
+                                onCopyCoords = { copyToClipboard("Coordenadas", "${loc.latitude}, ${loc.longitude}") },
+                                onCopyPlusCode = { loc.plusCode?.let { copyToClipboard("Plus Code", it) } },
+                                onCall = { loc.phone?.let { callPhoneNumber(it) } }
+                            )
+                        }
                     }
                 }
             }
         }
+    }
 
-        // Card Inferior com Detalhes Completos do Local Selecionado (no modo mapa)
+    // Card Inferior com Detalhes Completos do Local Selecionado (no modo croqui)
         AnimatedVisibility(
-            visible = selectedLocation != null && selectedTab == 0,
+            visible = selectedLocation != null && selectedTab == 1,
             enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
             modifier = Modifier
@@ -587,16 +829,28 @@ private fun EnhancedLocationBottomCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val catColor = getCategoryColor(location.category)
                     Surface(
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color = catColor.copy(alpha = 0.15f)
                     ) {
-                        Text(
-                            text = location.category.label,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp)
+                        ) {
+                            Icon(
+                                imageVector = getCategoryIcon(location.category),
+                                contentDescription = null,
+                                tint = catColor,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = location.category.label,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = catColor
+                            )
+                        }
                     }
 
                     if (location.rating != null) {
@@ -862,7 +1116,7 @@ private fun EnhancedLocationBottomCard(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(Icons.Default.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Ver no Maps", fontSize = 12.sp, maxLines = 1)
                 }
@@ -915,16 +1169,28 @@ private fun LocationListItemCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
+                    val catColor = getCategoryColor(location.category)
                     Surface(
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color = catColor.copy(alpha = 0.15f)
                     ) {
-                        Text(
-                            text = location.category.label,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                        )
+                        ) {
+                            Icon(
+                                imageVector = getCategoryIcon(location.category),
+                                contentDescription = null,
+                                tint = catColor,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = location.category.label,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = catColor
+                            )
+                        }
                     }
 
                     if (location.rating != null) {
@@ -1109,11 +1375,14 @@ private fun NeighborhoodMapCanvas(
             "trash_bin" to Pair(0.36f, 0.46f),
             "sape" to Pair(0.55f, 0.42f),
             "bus_stop" to Pair(0.68f, 0.41f),
+            "padaria_ramon" to Pair(0.44f, 0.32f),
+            "doces_sao_lourenco" to Pair(0.38f, 0.22f),
             "templo_eubiose" to Pair(0.48f, 0.24f),
             "quinta_cedro" to Pair(0.18f, 0.18f),
             "balonismo" to Pair(0.85f, 0.28f),
             "parque_aguas" to Pair(0.68f, 0.68f),
             "feirarte" to Pair(0.63f, 0.64f),
+            "teleferico" to Pair(0.55f, 0.50f),
             "calcadao_gastronomico" to Pair(0.56f, 0.58f),
             "unique_cafes_store" to Pair(0.53f, 0.58f),
             "basilica_matriz" to Pair(0.58f, 0.51f),
@@ -1122,7 +1391,10 @@ private fun NeighborhoodMapCanvas(
             "pizzaria_agostini" to Pair(0.46f, 0.60f),
             "restaurante_casarao" to Pair(0.66f, 0.48f),
             "sorveteria_miro" to Pair(0.51f, 0.47f),
+            "mercado_municipal" to Pair(0.60f, 0.62f),
+            "laticinios_miramar" to Pair(0.65f, 0.55f),
             "supermercado_centro" to Pair(0.50f, 0.66f),
+            "posto_san_remo" to Pair(0.47f, 0.55f),
             "trem_aguas" to Pair(0.78f, 0.58f),
             "morro_cruzeiro" to Pair(0.30f, 0.82f),
             "rota_cafe_unique" to Pair(0.70f, 0.82f),
@@ -1132,29 +1404,14 @@ private fun NeighborhoodMapCanvas(
             "upa_sao_lourenco" to Pair(0.82f, 0.84f),
             "bombeiros_sao_lourenco" to Pair(0.80f, 0.78f),
             "policia_militar" to Pair(0.58f, 0.45f),
-            "drogaria_raia" to Pair(0.52f, 0.52f)
+            "drogaria_raia" to Pair(0.52f, 0.52f),
+            "drogaria_pacheco" to Pair(0.54f, 0.52f)
         )
     }
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .background(Color(0xFFE8ECE9))
-            .pointerInput(locations) {
-                detectTapGestures { tapOffset ->
-                    val w = size.width
-                    val h = size.height
-                    val hit = locations.find { loc ->
-                        val coords = pinOffsets[loc.id] ?: Pair(0.5f, 0.5f)
-                        val pinX = coords.first * w
-                        val pinY = coords.second * h
-                        val distSq = (tapOffset.x - pinX) * (tapOffset.x - pinX) + (tapOffset.y - pinY) * (tapOffset.y - pinY)
-                        distSq <= (48 * density) * (48 * density)
-                    }
-                    if (hit != null) {
-                        onPinTap(hit)
-                    }
-                }
-            }
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawStylizedCityMap()
@@ -1182,83 +1439,67 @@ private fun NeighborhoodMapCanvas(
                 else -> Color(0xFF495057)
             }
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                MapPinView(
-                    location = loc,
-                    relativeX = coords.first,
-                    relativeY = coords.second,
-                    isSelected = isSelected,
-                    pinColor = pinColor,
-                    onClick = { onPinTap(loc) }
-                )
-            }
+            val pinXDp = maxWidth * coords.first
+            val pinYDp = maxHeight * coords.second
+
+            MapPinItem(
+                location = loc,
+                isSelected = isSelected,
+                pinColor = pinColor,
+                onClick = { onPinTap(loc) },
+                modifier = Modifier.offset(x = pinXDp - 30.dp, y = pinYDp - 45.dp)
+            )
         }
     }
 }
 
 @Composable
-private fun MapPinView(
+private fun MapPinItem(
     location: MapLocation,
-    relativeX: Float,
-    relativeY: Float,
     isSelected: Boolean,
     pinColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    androidx.compose.ui.layout.Layout(
-        content = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .clickable(onClick = onClick)
-                    .testTag("map_pin_${location.id}")
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = pinColor,
-                    shadowElevation = if (isSelected) 8.dp else 3.dp,
-                    modifier = Modifier.size(if (isSelected) 42.dp else 34.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = iconForCategory(location.category, location.id),
-                            contentDescription = location.title,
-                            tint = Color.White,
-                            modifier = Modifier.size(if (isSelected) 22.dp else 18.dp)
-                        )
-                    }
-                }
-
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = Color.White.copy(alpha = 0.95f),
-                    shadowElevation = 2.dp,
-                    modifier = Modifier.padding(top = 3.dp)
-                ) {
-                    Text(
-                        text = if (location.id == "house") "★ A CASA" else location.title.take(16),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 9.sp,
-                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
-                        ),
-                        color = if (isSelected) pinColor else Color(0xFF1E293B),
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .testTag("map_pin_${location.id}")
+    ) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = pinColor,
+            shadowElevation = if (isSelected) 8.dp else 3.dp,
+            modifier = Modifier.size(if (isSelected) 42.dp else 34.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = iconForCategory(location.category, location.id),
+                    contentDescription = location.title,
+                    tint = Color.White,
+                    modifier = Modifier.size(if (isSelected) 22.dp else 18.dp)
+                )
             }
         }
-    ) { measurables, constraints ->
-        val placeable = measurables.first().measure(constraints)
-        val parentWidth = constraints.maxWidth
-        val parentHeight = constraints.maxHeight
 
-        val x = (relativeX * parentWidth - placeable.width / 2).toInt()
-        val y = (relativeY * parentHeight - placeable.height).toInt()
-
-        layout(parentWidth, parentHeight) {
-            placeable.placeRelative(x = x, y = y)
+        Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = Color.White.copy(alpha = 0.95f),
+            shadowElevation = 2.dp,
+            modifier = Modifier.padding(top = 3.dp)
+        ) {
+            Text(
+                text = if (location.id == "house") "★ A CASA" else location.title.take(16),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 9.sp,
+                    fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold
+                ),
+                color = if (isSelected) pinColor else Color(0xFF1E293B),
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -1364,22 +1605,214 @@ private fun DrawScope.drawStylizedCityMap() {
 }
 
 @Composable
-private fun LegendRow(color: Color, label: String) {
+private fun CategorySectionHeader(
+    category: LocationCategory,
+    count: Int,
+    onFilterClick: () -> Unit
+) {
+    val catColor = getCategoryColor(category)
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = catColor.copy(alpha = 0.08f),
+        border = BorderStroke(1.dp, catColor.copy(alpha = 0.25f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp)
+            .testTag("category_section_header_${category.name}")
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = catColor,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = getCategoryIcon(category),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = category.label,
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "$count locais cadastrados",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = catColor.copy(alpha = 0.15f),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onFilterClick)
+            ) {
+                Text(
+                    text = "Filtrar",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp
+                    ),
+                    color = catColor,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActiveCategoryBanner(
+    category: LocationCategory,
+    count: Int,
+    onClear: () -> Unit
+) {
+    val catColor = getCategoryColor(category)
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = catColor.copy(alpha = 0.1f),
+        border = BorderStroke(1.dp, catColor.copy(alpha = 0.35f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 6.dp)
+            .testTag("active_category_banner")
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = catColor,
+                    modifier = Modifier.size(34.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = getCategoryIcon(category),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = "Exibindo apenas ${category.label}",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "$count locais encontrados",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = onClear)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Limpar filtro",
+                        modifier = Modifier.size(12.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Ver Todos",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LegendRow(
+    color: Color,
+    label: String,
+    isSelected: Boolean = false,
+    onClick: (() -> Unit)? = null
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 2.dp)
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(vertical = 3.dp, horizontal = 4.dp)
     ) {
         Surface(
             shape = CircleShape,
             color = color,
-            modifier = Modifier.size(9.dp)
+            modifier = Modifier.size(10.dp)
         ) {}
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-            color = MaterialTheme.colorScheme.onSurface
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 10.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+            ),
+            color = if (isSelected) color else MaterialTheme.colorScheme.onSurface
         )
+    }
+}
+
+private fun getCategoryColor(cat: LocationCategory): Color {
+    return when (cat) {
+        LocationCategory.FOOD -> Color(0xFFE8590C)
+        LocationCategory.ATTRACTION -> Color(0xFF1C7ED6)
+        LocationCategory.EMERGENCY -> Color(0xFFE03131)
+        LocationCategory.HOUSE -> Color(0xFFC85A32)
+        LocationCategory.SERVICES -> Color(0xFF2B8A3E)
+        LocationCategory.TRANSPORT -> Color(0xFF1098AD)
+    }
+}
+
+private fun getCategoryIcon(cat: LocationCategory): ImageVector {
+    return when (cat) {
+        LocationCategory.FOOD -> Icons.Default.Restaurant
+        LocationCategory.ATTRACTION -> Icons.Default.Explore
+        LocationCategory.EMERGENCY -> Icons.Default.LocalHospital
+        LocationCategory.HOUSE -> Icons.Default.Home
+        LocationCategory.SERVICES -> Icons.Default.ShoppingBag
+        LocationCategory.TRANSPORT -> Icons.Default.DirectionsBus
     }
 }
 
@@ -1387,6 +1820,7 @@ private fun iconForCategory(cat: LocationCategory, id: String = ""): ImageVector
     return when {
         id == "trem_aguas" -> Icons.Default.Train
         id == "supermercado_centro" -> Icons.Default.ShoppingBag
+        id == "trash_bin" -> Icons.Default.Delete
         id == "hospital_sao_lourenco" || id == "upa_sao_lourenco" -> Icons.Default.LocalHospital
         id == "bombeiros_sao_lourenco" -> Icons.Default.LocalFireDepartment
         id == "policia_militar" -> Icons.Default.Security
@@ -1396,7 +1830,7 @@ private fun iconForCategory(cat: LocationCategory, id: String = ""): ImageVector
         id == "sorveteria_miro" -> Icons.Default.Icecream
         cat == LocationCategory.EMERGENCY -> Icons.Default.LocalHospital
         cat == LocationCategory.HOUSE -> Icons.Default.Home
-        cat == LocationCategory.SERVICES -> Icons.Default.Delete
+        cat == LocationCategory.SERVICES -> Icons.Default.ShoppingBag
         cat == LocationCategory.TRANSPORT -> Icons.Default.DirectionsBus
         cat == LocationCategory.FOOD -> Icons.Default.Restaurant
         cat == LocationCategory.ATTRACTION -> Icons.Default.Explore

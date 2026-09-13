@@ -44,11 +44,11 @@ data class MapLocation(
 )
 
 enum class LocationCategory(val label: String) {
-    HOUSE("A Casa & Arredores"),
-    EMERGENCY("Emergência & Saúde"),
-    ATTRACTION("Passeios & Lazer"),
-    FOOD("Gastronomia & Bares"),
-    SERVICES("Serviços & Coleta"),
+    FOOD("Restaurantes"),
+    ATTRACTION("Pontos Turísticos"),
+    EMERGENCY("Emergência"),
+    HOUSE("A Casa"),
+    SERVICES("Mercados & Serviços"),
     TRANSPORT("Transporte & Ônibus")
 }
 

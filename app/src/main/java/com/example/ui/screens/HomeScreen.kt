@@ -5,12 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,10 +26,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
@@ -94,11 +88,11 @@ fun HomeScreen(
     onNavigateToRecommendations: () -> Unit,
     onNavigateToChat: () -> Unit,
     onFeedback: (String) -> Unit,
-    onOpenLaunchPage: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val colors = SolariumTheme.colors
+    val chunkedSections = androidx.compose.runtime.remember(sections) { sections.chunked(2) }
 
     LazyColumn(
         modifier = modifier
@@ -112,9 +106,8 @@ fun HomeScreen(
             SolariumMinimalistBrandHeader(
                 onCopyAddress = {
                     copyToClipboard(context, HouseRepository.HOUSE_ADDRESS, "Endereço da casa copiado!")
-                    onFeedback("Endereço copiado para a área de transferência")
-                },
-                onOpenLaunchPage = onOpenLaunchPage
+                    onFeedback("Endereço copiado: ${HouseRepository.HOUSE_ADDRESS}")
+                }
             )
         }
 
@@ -123,9 +116,11 @@ fun HomeScreen(
             QuickActionButtonsRow(
                 onCopyWifi = {
                     copyToClipboard(context, HouseRepository.WIFI_PASSWORD, "Senha do Wi-Fi copiada!")
-                    onFeedback("Senha do Wi-Fi copiada: ${HouseRepository.WIFI_PASSWORD}")
+                    onFeedback("Wi-Fi: ${HouseRepository.WIFI_SSID} • Senha copiada: ${HouseRepository.WIFI_PASSWORD}")
                 },
                 onContactHost = {
+                    copyToClipboard(context, HouseRepository.HOST_PHONE, "Contato da Anfitriã copiado!")
+                    onFeedback("Contato da Valéria: ${HouseRepository.HOST_PHONE_DISPLAY} (copiado!)")
                     openWhatsApp(context, HouseRepository.HOST_PHONE, "Olá Valéria! Sou hóspede da casa Solarium.")
                 },
                 onNavigateToMap = onNavigateToMap,
@@ -166,7 +161,7 @@ fun HomeScreen(
                     Surface(
                         shape = RoundedCornerShape(20.dp),
                         color = colors.softYellowContainer,
-                        modifier = Modifier.clickable { onNavigateToManual() }
+                        onClick = onNavigateToManual
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -194,7 +189,6 @@ fun HomeScreen(
         }
 
         // 4. Grade de 2 Colunas com os 10 Capítulos do Manual (idêntica ao vídeo)
-        val chunkedSections = sections.chunked(2)
         items(
             count = chunkedSections.size,
             key = { rowIndex -> "manual_grid_row_$rowIndex" }
@@ -239,20 +233,9 @@ fun HomeScreen(
  */
 @Composable
 private fun SolariumMinimalistBrandHeader(
-    onCopyAddress: () -> Unit,
-    onOpenLaunchPage: () -> Unit
+    onCopyAddress: () -> Unit
 ) {
     val colors = SolariumTheme.colors
-    val infiniteTransition = rememberInfiniteTransition(label = "sun_pulse")
-    val sunAuraScale by infiniteTransition.animateFloat(
-        initialValue = 0.94f,
-        targetValue = 1.06f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2800, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "sun_scale"
-    )
 
     Box(
         modifier = Modifier
@@ -264,10 +247,10 @@ private fun SolariumMinimalistBrandHeader(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Ícone Minimalista de Sol com Raios Geométricos (toque para abrir a launchpage)
+            // Ícone Minimalista de Sol com Raios Geométricos
             Box(
                 modifier = Modifier
-                    .size(72.dp)
+                    .size(68.dp)
                     .clip(CircleShape)
                     .background(
                         Brush.radialGradient(
@@ -277,15 +260,13 @@ private fun SolariumMinimalistBrandHeader(
                                 Color.Transparent
                             )
                         )
-                    )
-                    .clickable(role = Role.Button, onClick = onOpenLaunchPage),
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 MinimalistSunLogoCanvas(
                     sunColor = colors.sunOrange,
                     rayColor = colors.softYellow,
-                    pulse = sunAuraScale,
-                    modifier = Modifier.size(44.dp)
+                    modifier = Modifier.size(42.dp)
                 )
             }
 
@@ -325,9 +306,10 @@ private fun SolariumMinimalistBrandHeader(
                 color = Color.White,
                 border = androidx.compose.foundation.BorderStroke(1.dp, colors.linenBorder),
                 shadowElevation = 1.dp,
+                onClick = onCopyAddress,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(role = Role.Button, onClick = onCopyAddress)
+                    .testTag("btn_copy_address_header")
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -360,31 +342,6 @@ private fun SolariumMinimalistBrandHeader(
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Atalho para Rever a Tela de Abertura / Launchpage
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = colors.sunOrangeContainer.copy(alpha = 0.45f),
-                modifier = Modifier
-                    .clickable(role = Role.Button, onClick = onOpenLaunchPage)
-                    .testTag("btn_reopen_launchpage")
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "✨ Ver Tela de Abertura (Launchpage)",
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium
-                        ),
-                        color = colors.warmTerracotta
-                    )
-                }
-            }
         }
     }
 }
@@ -396,13 +353,12 @@ private fun SolariumMinimalistBrandHeader(
 private fun MinimalistSunLogoCanvas(
     sunColor: Color,
     rayColor: Color,
-    pulse: Float,
     modifier: Modifier = Modifier
 ) {
     Canvas(modifier = modifier) {
         val centerX = size.width / 2f
         val centerY = size.height / 2f
-        val centerRadius = (size.width * 0.24f) * pulse
+        val centerRadius = size.width * 0.24f
         val innerRay = size.width * 0.34f
         val outerRay = size.width * 0.46f
 
@@ -478,7 +434,7 @@ private fun QuickActionButtonsRow(
         )
         QuickActionButton(
             title = "Chat IA",
-            icon = Icons.Default.Chat,
+            icon = Icons.AutoMirrored.Filled.Chat,
             onClick = onNavigateToChat,
             testTag = "quick_btn_chat"
         )
@@ -497,30 +453,31 @@ private fun QuickActionButton(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(vertical = 4.dp, horizontal = 2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp, horizontal = 4.dp)
             .testTag(testTag)
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
+                .size(50.dp)
                 .clip(CircleShape)
-                .background(colors.sunOrangeContainer.copy(alpha = 0.55f)),
+                .background(colors.sunOrangeContainer.copy(alpha = 0.7f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = title,
                 tint = colors.warmTerracotta,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.Medium,
-                fontSize = 11.5.sp
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp
             ),
             color = colors.textPrimary,
             textAlign = TextAlign.Center
@@ -560,7 +517,7 @@ private fun ManualGridCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = androidx.compose.foundation.BorderStroke(1.dp, colors.linenBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp, pressedElevation = 4.dp),
         modifier = modifier
             .height(116.dp)
             .testTag("manual_grid_card_${section.id}")
@@ -685,7 +642,7 @@ private fun QuickNavigationShortcuts(
 
             ShortcutPill(
                 title = "Concierge IA",
-                icon = Icons.Default.Chat,
+                icon = Icons.AutoMirrored.Filled.Chat,
                 tint = Color(0xFFB84C26),
                 containerTint = Color(0xFFFFDBD0),
                 onClick = onNavigateToChat,
@@ -763,16 +720,11 @@ private fun openWhatsApp(context: Context, phoneNumber: String, message: String)
     try {
         val cleanNumber = phoneNumber.replace(Regex("[^0-9]"), "")
         val uri = Uri.parse("https://api.whatsapp.com/send?phone=$cleanNumber&text=${Uri.encode(message)}")
-        val intent = Intent(Intent.ACTION_VIEW, uri)
-        intent.setPackage("com.whatsapp")
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
         context.startActivity(intent)
     } catch (_: Exception) {
-        // Fallback para discador se WhatsApp não estiver instalado
-        try {
-            val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumber"))
-            context.startActivity(dialIntent)
-        } catch (_: Exception) {
-            // Silencioso
-        }
+        // WhatsApp ou navegador indisponível: feedback de cópia em área de transferência já realizado
     }
 }

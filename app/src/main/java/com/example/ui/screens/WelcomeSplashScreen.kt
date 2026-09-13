@@ -1,18 +1,14 @@
 package com.example.ui.screens
 
+import android.graphics.BlurMaskFilter
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -30,7 +27,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -40,155 +36,173 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 
 /**
- * LaunchPage Oficial Solarium - Abertura Cinematográfica Ouro & Mandala
+ * Launch Screen Oficial Solarium — Fidelidade Exata ao Vídeo da Marca.
  *
- * Reprodução 1:1 rigorosa do vídeo da marca SOLARIUM:
- * 1. Fundo neutro de estúdio com vinheta suave em tons de cinza-linho aquecido (#E6E4DE a #B8B2A6).
- * 2. Partículas e fragmentos triangulares flutuantes de poeira dourada antiga (#B89C5D).
- * 3. Desabrochar da Mandala Solar em ourivesaria de ouro acetinado (#B59A58 e #8F7638).
- * 4. Fita de luz luminosa em órbita elíptica 3D (#FFFFFF com halo #E5C270 e cauda de faíscas).
- * 5. Wordmark "SOLARIUM" fiel ao vídeo:
- *    - Início com letras vazadas em fio de ouro translúcido.
- *    - Revelação em tipografia geométrica moderna Sans-Serif, branco puro (#FFFFFF) com sombra 3D projetada (#483F31).
- * 6. Explosão de raios solares dourados radiantes (Sunburst) emanando por trás da mandala.
- * 7. Tela limpa e minimalista sem poluição visual, exatamente como no vídeo de abertura.
+ * Fases da Animação (9 segundos):
+ * 1. 0.0s - 2.0s: Surgimento da Mandala Dourada em camadas concêntricas e texto "SOLARIUM" em contorno dourado metálico.
+ * 2. 2.0s - 4.5s: Fita de luz dourada luminosa em órbita 3D circundando a mandala com partículas e triângulos flutuantes.
+ * 3. 4.5s - 6.5s: Dissipação da fita de luz e transição das letras vazadas para o texto "SOLARIUM" em BRANCO SÓLIDO 3D de alto relevo.
+ * 4. 6.5s - 9.0s: CLÍMAX — Explosão de Raios Solares Dourados Triunfais (Sunburst) irradiando por trás do texto e da mandala!
  */
 @Composable
 fun WelcomeSplashScreen(
     onFinish: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Linha do tempo da animação (0.0s a 4.0s - dinâmica e fluida)
-    val animTime = remember { Animatable(0f) }
+    var isDismissed by remember { mutableStateOf(false) }
 
-    // Respiração suave e rotação sutil pós-revelação
-    val infiniteTransition = rememberInfiniteTransition(label = "continuous_ambient")
-    val ambientRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(90000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "ambient_rot"
-    )
-    val ambientBreathing by infiniteTransition.animateFloat(
-        initialValue = 0.99f,
-        targetValue = 1.01f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(3600, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "ambient_pulse"
-    )
-
-    LaunchedEffect(Unit) {
-        launch {
-            animTime.animateTo(
-                targetValue = 4.0f,
-                animationSpec = tween(durationMillis = 3800, easing = LinearEasing)
-            )
-            onFinish()
+    val triggerFinish: () -> Unit = remember(onFinish) {
+        {
+            if (!isDismissed) {
+                isDismissed = true
+                onFinish()
+            }
         }
     }
 
-    val t = animTime.value
+    // Progresso mestre de 0f a 1f representando 9 segundos
+    val timelineProgress = remember { Animatable(0f) }
 
-    // Progresso das fases correspondendo aos frames do vídeo (escala ajustada para 4.0s):
-    // Fase 1: Desabrochar da mandala e primeiras partículas (0s a 1.4s)
-    val mandalaBloom = (t / 1.3f).coerceIn(0f, 1f)
-    val mandalaScale = (0.35f + 0.65f * (t / 1.2f).coerceIn(0f, 1f)) * ambientBreathing
+    LaunchedEffect(Unit) {
+        timelineProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 9000, easing = LinearEasing)
+        )
+        delay(600)
+        triggerFinish()
+    }
 
-    // Fase 2: Fita de luz dourada em órbita elíptica 3D (0.4s a 2.4s)
-    val ribbonProgress = ((t - 0.4f) / 1.8f).coerceIn(0f, 1f)
+    val p = timelineProgress.value
+
+    // Sub-fases da animação
+    val mandalaAlpha = min(1f, p / 0.20f)
+    val mandalaScale = 0.82f + 0.18f * min(1f, p / 0.35f)
+
+    // Fita de luz 3D (ativa entre 18% e 55%)
+    val ribbonProgress = when {
+        p < 0.18f -> 0f
+        p > 0.55f -> 1f
+        else -> (p - 0.18f) / 0.37f
+    }
     val ribbonAlpha = when {
-        t < 0.4f -> 0f
-        t < 0.8f -> (t - 0.4f) / 0.4f
-        t > 2.2f -> (1f - (t - 2.2f) / 0.4f).coerceAtLeast(0f)
+        p < 0.18f -> 0f
+        p < 0.25f -> (p - 0.18f) / 0.07f
+        p < 0.48f -> 1f
+        p < 0.58f -> 1f - (p - 0.48f) / 0.10f
+        else -> 0f
+    }
+
+    // Transição das letras contornadas douradas para o texto branco sólido 3D
+    val outlineTextAlpha = when {
+        p < 0.10f -> p / 0.10f
+        p < 0.45f -> 1f
+        p < 0.55f -> 1f - (p - 0.45f) / 0.10f
+        else -> 0f
+    }
+    val solidTextAlpha = when {
+        p < 0.48f -> 0f
+        p < 0.58f -> (p - 0.48f) / 0.10f
+        else -> 1f
+    }
+    val solidTextScale = when {
+        p < 0.48f -> 0.94f
+        p < 0.58f -> 0.94f + 0.06f * ((p - 0.48f) / 0.10f)
         else -> 1f
     }
 
-    // Fase 3: Wordmark SOLARIUM (Letras vazadas -> Sólido 3D Branco)
-    val outlineAlpha = if (t < 2.0f) {
-        (t / 1.0f).coerceIn(0f, 0.45f)
-    } else {
-        (1f - (t - 2.0f) / 0.3f).coerceAtLeast(0f)
+    // Clímax dos Raios Solares Dourados (Sunburst - ativa a partir de 60%)
+    val sunburstAlpha = when {
+        p < 0.60f -> 0f
+        p < 0.72f -> (p - 0.60f) / 0.12f
+        p < 0.90f -> 1f
+        else -> 1f - 0.15f * ((p - 0.90f) / 0.10f)
     }
-    val solidAlpha = ((t - 2.0f) / 0.4f).coerceIn(0f, 1f)
+    val sunburstScale = when {
+        p < 0.60f -> 0.50f
+        p < 0.75f -> 0.50f + 0.50f * ((p - 0.60f) / 0.15f)
+        else -> 1f + 0.05f * sin((p - 0.75f) * 4f * PI.toFloat())
+    }
 
-    // Fase 4: Explosão de Raios Solares (Sunburst) (2.5s a 3.8s)
-    val sunburstProgress = ((t - 2.4f) / 0.9f).coerceIn(0f, 1f)
-    val sunburstAlpha = ((t - 2.4f) / 0.5f).coerceIn(0f, 1f)
+    // Botão de entrada surge no clímax final
+    val enterButtonAlpha = when {
+        p < 0.72f -> 0f
+        else -> min(1f, (p - 0.72f) / 0.12f)
+    }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            // Fundo de estúdio exatamente como no vídeo: gradiente radial com vinheta suave
+            // Fundo de estúdio exatamente como no vídeo: gradiente radial suave bege/cinza quente
             .background(
                 Brush.radialGradient(
                     colors = listOf(
-                        Color(0xFFE8E6E0), // Centro neutro claro
-                        Color(0xFFE2DFD9), // Meio linho suave
-                        Color(0xFFD1CDC4), // Transição
-                        Color(0xFFBDB7AC)  // Borda externa vinhetada
+                        Color(0xFFECE9E2), // Centro marfim suave
+                        Color(0xFFE2DED6),
+                        Color(0xFFD4CEC3),
+                        Color(0xFFBFB8AB)  // Vinheta sutil nas bordas
                     )
                 )
             )
-            .pointerInput(Unit) {
-                detectTapGestures {
-                    onFinish()
-                }
-            }
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onFinish
+                onClick = triggerFinish
             )
             .testTag("welcome_splash_screen"),
         contentAlignment = Alignment.Center
     ) {
-        // 1. Partículas douradas e pequenos fragmentos triangulares flutuantes
-        GoldenDustBackground(animTime = t)
+        // 1. Poeira de Ouro e Fragmentos Triangulares Flutuantes (como no vídeo)
+        GoldenParticlesAndFloatingShapes(
+            progress = p,
+            modifier = Modifier.fillMaxSize()
+        )
 
-        // 2. Botão "Pular ›" no canto superior direito para avanço instantâneo
+        // 2. Botão "Pular ›" no canto superior direito
         Surface(
-            onClick = onFinish,
+            onClick = triggerFinish,
             shape = RoundedCornerShape(20.dp),
-            color = Color(0x22FFFFFF),
+            color = Color.White.copy(alpha = 0.6f),
             contentColor = Color(0xFF3D362A),
-            border = BorderStroke(1.dp, Color(0x33B59A58)),
+            border = BorderStroke(1.dp, Color(0x66B59A58)),
+            shadowElevation = 2.dp,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(top = 16.dp, end = 20.dp)
+                .testTag("btn_skip_launchpage")
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -198,7 +212,7 @@ fun WelcomeSplashScreen(
                     text = "Pular",
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 12.5.sp,
+                        fontSize = 12.sp,
                         letterSpacing = 0.5.sp
                     )
                 )
@@ -206,136 +220,133 @@ fun WelcomeSplashScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Pular introdução",
-                    modifier = Modifier.size(13.dp)
+                    modifier = Modifier.size(14.dp)
                 )
             }
         }
 
-        // 3. Composição Central: Mandala, Raios Solares, Órbita e Wordmark SOLARIUM
+        // 3. Composição Central: Sunburst + Mandala + Fita de Luz + Tipografia SOLARIUM
         Box(
             modifier = Modifier
-                .size(360.dp)
-                .scale(mandalaScale),
+                .size(380.dp)
+                .graphicsLayer {
+                    alpha = mandalaAlpha
+                    scaleX = mandalaScale
+                    scaleY = mandalaScale
+                },
             contentAlignment = Alignment.Center
         ) {
-            // A. Raios Solares Radiantes (Sunburst) emanando por trás da mandala
-            if (sunburstProgress > 0f) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .alpha(sunburstAlpha)
-                ) {
-                    drawSunburstRays(
-                        progress = sunburstProgress,
-                        pulse = ambientBreathing
-                    )
-                }
-            }
-
-            // B. Mandala Solar em Ouro Acetinado Antigo
-            Canvas(
-                modifier = Modifier
-                    .size(310.dp)
-                    .alpha(mandalaBloom)
-            ) {
-                drawGoldenMandala(
-                    bloomProgress = mandalaBloom,
-                    rotationDegrees = ambientRotation * 0.12f
+            // A. Clímax dos Raios de Sol Dourados Radiantes (Sunburst)
+            if (sunburstAlpha > 0f) {
+                GoldenSunburstCanvas(
+                    alpha = sunburstAlpha,
+                    scale = sunburstScale,
+                    time = p * 9f,
+                    modifier = Modifier.size(380.dp)
                 )
             }
 
-            // C. Fita de Luz Dourada em Órbita Elíptica 3D
+            // B. Mandala Sagrada Dourada com todas as camadas ricas do vídeo
+            SolariumAuthenticMandalaCanvas(
+                progress = min(1f, p / 0.35f),
+                modifier = Modifier.size(340.dp)
+            )
+
+            // C. Fita de Luz Dourada Fluida em Órbita 3D com rastro brilhante
             if (ribbonAlpha > 0f) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .alpha(ribbonAlpha)
-                ) {
-                    drawGoldenOrbitRibbon(
-                        progress = ribbonProgress
-                    )
-                }
+                GoldenRibbonOrbitalCanvas(
+                    progress = ribbonProgress,
+                    alpha = ribbonAlpha,
+                    modifier = Modifier.size(360.dp)
+                )
             }
 
-            // D. Halo de Luz suave no centro
-            if (t >= 3.5f) {
-                Canvas(modifier = Modifier.size(170.dp)) {
-                    drawCircle(
-                        brush = Brush.radialGradient(
+            // D. Halo de luz suave no centro
+            Box(
+                modifier = Modifier
+                    .size(190.dp)
+                    .background(
+                        Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFFFAF7EE).copy(alpha = 0.70f * solidAlpha),
-                                Color(0xFFE8D7A8).copy(alpha = 0.30f * solidAlpha),
+                                Color(0xFFFFFDF5).copy(alpha = 0.85f * (if (solidTextAlpha > 0f) 0.95f else 0.45f)),
+                                Color(0xFFF7EAC7).copy(alpha = 0.40f * (if (solidTextAlpha > 0f) 0.80f else 0.30f)),
                                 Color.Transparent
                             )
                         )
                     )
-                }
-            }
+            )
 
-            // E. Wordmark Central "SOLARIUM" (Fiel à tipografia e 3D do vídeo)
+            // E. Tipografia "SOLARIUM"
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
-                // Estado 1: Letras vazadas em fio de ouro fino (0s a ~4.5s)
-                if (outlineAlpha > 0f) {
+                // E1. Texto em Contorno Dourado Metálico (Fase Inicial 0s a ~4.5s)
+                if (outlineTextAlpha > 0.01f) {
                     Text(
                         text = "SOLARIUM",
                         style = MaterialTheme.typography.headlineLarge.copy(
-                            fontSize = 36.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            letterSpacing = 8.sp,
+                            fontSize = 35.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 9.sp,
                             fontFamily = FontFamily.SansSerif
                         ),
-                        color = Color(0xFFB59A58).copy(alpha = outlineAlpha),
-                        textAlign = TextAlign.Center
+                        color = Color(0xFFB8964E).copy(alpha = outlineTextAlpha),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.graphicsLayer {
+                            alpha = outlineTextAlpha
+                        }
                     )
                 }
 
-                // Estado 2: Letras brancas 3D sólidas com sombra projetada (4.2s em diante)
-                if (solidAlpha > 0f) {
+                // E2. Texto em BRANCO SÓLIDO 3D com Alto Relevo e Sombra (Fase Final 4.5s a 9s)
+                if (solidTextAlpha > 0.01f) {
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier.alpha(solidAlpha)
+                        modifier = Modifier.graphicsLayer {
+                            alpha = solidTextAlpha
+                            scaleX = solidTextScale
+                            scaleY = solidTextScale
+                        }
                     ) {
-                        // Sombra projetada para baixo e direita sobre a mandala
+                        // Sombra projetada profunda 3D
                         Text(
                             text = "SOLARIUM",
                             style = MaterialTheme.typography.headlineLarge.copy(
-                                fontSize = 36.sp,
+                                fontSize = 35.sp,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 8.sp,
+                                letterSpacing = 9.sp,
                                 fontFamily = FontFamily.SansSerif
                             ),
-                            color = Color(0xFF433B2E).copy(alpha = 0.65f),
+                            color = Color(0x6B2D2619),
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 4.dp, start = 2.5.dp)
+                            modifier = Modifier.offset(x = 3.dp, y = 4.5.dp)
                         )
 
-                        // Sombra secundária difusa
+                        // Sombra de oclusão de contato suave
                         Text(
                             text = "SOLARIUM",
                             style = MaterialTheme.typography.headlineLarge.copy(
-                                fontSize = 36.sp,
+                                fontSize = 35.sp,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 8.sp,
+                                letterSpacing = 9.sp,
                                 fontFamily = FontFamily.SansSerif
                             ),
-                            color = Color(0xFF635845).copy(alpha = 0.35f),
+                            color = Color(0x3842361E),
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 2.dp, start = 1.dp)
+                            modifier = Modifier.offset(x = 1.dp, y = 1.5.dp)
                         )
 
-                        // Letras Brancas Puras em Alto Relevo
+                        // Texto principal em Branco Puro Sólido
                         Text(
                             text = "SOLARIUM",
                             style = MaterialTheme.typography.headlineLarge.copy(
-                                fontSize = 36.sp,
+                                fontSize = 35.sp,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 8.sp,
+                                letterSpacing = 9.sp,
                                 fontFamily = FontFamily.SansSerif
                             ),
-                            color = Color(0xFFFFFFFF),
+                            color = Color.White,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -343,442 +354,541 @@ fun WelcomeSplashScreen(
             }
         }
 
-        // 4. Botão Inferior "Entrar no Guia" (Interativo, com feedback tátil e touch target de 48dp)
-        Surface(
-            onClick = onFinish,
-            shape = RoundedCornerShape(24.dp),
-            color = Color(0xFFB59A58),
-            contentColor = Color(0xFF221A0E),
-            shadowElevation = 4.dp,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 36.dp)
-                .testTag("launch_btn_enter")
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 13.dp)
+        // 4. Rodapé: Botão Dourado de Entrada (surge majestosamente durante o clímax)
+        if (enterButtonAlpha > 0.01f) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 44.dp)
+                    .graphicsLayer {
+                        alpha = enterButtonAlpha
+                        translationY = (1f - enterButtonAlpha) * 30f
+                    }
             ) {
-                Text(
-                    text = "Entrar no Guia",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        letterSpacing = 0.5.sp,
-                        fontFamily = FontFamily.SansSerif
-                    )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "Entrar no Guia da Casa",
-                    modifier = Modifier.size(16.dp)
-                )
+                Button(
+                    onClick = triggerFinish,
+                    shape = RoundedCornerShape(26.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFC2A35D),
+                        contentColor = Color(0xFF241C0F)
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 8.dp
+                    ),
+                    modifier = Modifier
+                        .height(50.dp)
+                        .padding(horizontal = 24.dp)
+                        .testTag("launch_btn_enter")
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Entrar no Guia",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                letterSpacing = 0.5.sp
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "Entrar no Guia da Casa",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
         }
     }
 }
 
 /**
- * Desenha a Mandala Solar Sagrada de 16 Pontas com precisão de ourivesaria geométrica.
+ * Mandala Solar Autêntica com linhas nobres em dourado metálico.
+ * Reflete rigorosamente a geometria do vídeo:
+ * - Centro: flor de lótus de 8 pétalas internas com nervuras.
+ * - Anel intermediário: cúspides/arcos e coroa de pétalas pontiagudas entrançadas.
+ * - Camada externa: 16 pétalas góticas majestosas encimadas por hastes com pérolas e pequenos ornamentos.
  */
-private fun DrawScope.drawGoldenMandala(
-    bloomProgress: Float,
-    rotationDegrees: Float
+@Composable
+private fun SolariumAuthenticMandalaCanvas(
+    progress: Float,
+    modifier: Modifier = Modifier
 ) {
-    val cx = size.width / 2f
-    val cy = size.height / 2f
-    val maxRadius = (size.width / 2f) * 0.95f * bloomProgress
+    val goldDeep = Color(0xFF9E813D)
+    val goldMain = Color(0xFFC2A35D)
+    val goldLight = Color(0xFFDFC687)
+    val goldBright = Color(0xFFF7E8BA)
 
-    // Cores metálicas nobres de ouro acetinado antigo (extraídas fielmente do vídeo)
-    val goldDeep = Color(0xFF8C7338)
-    val goldMain = Color(0xFFB59A58)
-    val goldLight = Color(0xFFCCB477)
-    val goldBright = Color(0xFFEADAA4)
+    Canvas(modifier = modifier) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val baseR = size.width / 2f * 0.94f * progress
 
-    val baseAngleRad = Math.toRadians(rotationDegrees.toDouble()).toFloat()
+        if (baseR <= 5f) return@Canvas
 
-    // 1. Centro: Pequeno ponto solar e aro interno
-    drawCircle(
-        color = goldLight,
-        radius = 4.dp.toPx() * bloomProgress,
-        center = Offset(cx, cy),
-        style = Fill
-    )
-    drawCircle(
-        color = goldMain,
-        radius = 14.dp.toPx() * bloomProgress,
-        center = Offset(cx, cy),
-        style = Stroke(width = 1.2.dp.toPx())
-    )
+        val strokeFine = 1.1.dp.toPx()
+        val strokeBold = 1.6.dp.toPx()
 
-    // 2. Camada de 8 Pétalas Internas de Lótus
-    val innerPetals = 8
-    val innerRadius = maxRadius * 0.28f
-    for (i in 0 until innerPetals) {
-        val angle = baseAngleRad + (i * 2 * PI / innerPetals).toFloat()
-        val halfAngle = (PI / innerPetals).toFloat()
-
-        val startX = cx + (maxRadius * 0.08f) * cos(angle - halfAngle)
-        val startY = cy + (maxRadius * 0.08f) * sin(angle - halfAngle)
-        val endX = cx + (maxRadius * 0.08f) * cos(angle + halfAngle)
-        val endY = cy + (maxRadius * 0.08f) * sin(angle + halfAngle)
-        val tipX = cx + innerRadius * cos(angle)
-        val tipY = cy + innerRadius * sin(angle)
-
-        val ctrlX1 = cx + (innerRadius * 0.7f) * cos(angle - halfAngle * 0.55f)
-        val ctrlY1 = cy + (innerRadius * 0.7f) * sin(angle - halfAngle * 0.55f)
-        val ctrlX2 = cx + (innerRadius * 0.7f) * cos(angle + halfAngle * 0.55f)
-        val ctrlY2 = cy + (innerRadius * 0.7f) * sin(angle + halfAngle * 0.55f)
-
-        val petalPath = Path().apply {
-            moveTo(startX, startY)
-            quadraticTo(ctrlX1, ctrlY1, tipX, tipY)
-            quadraticTo(ctrlX2, ctrlY2, endX, endY)
-            close()
-        }
-        drawPath(
-            path = petalPath,
-            color = goldLight,
-            style = Stroke(width = 1.1.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
-        )
-    }
-
-    // 3. Aro Circular Intermediário com 16 Pérolas Douradas
-    val ring1Radius = maxRadius * 0.32f
-    drawCircle(
-        color = goldMain,
-        radius = ring1Radius,
-        center = Offset(cx, cy),
-        style = Stroke(width = 1.0.dp.toPx())
-    )
-
-    for (i in 0 until 16) {
-        val dotAngle = baseAngleRad + (i * 2 * PI / 16).toFloat()
-        val dotX = cx + ring1Radius * cos(dotAngle)
-        val dotY = cy + ring1Radius * sin(dotAngle)
+        // 1. Círculos concêntricos de estrutura
         drawCircle(
-            color = goldBright,
-            radius = 1.4.dp.toPx() * bloomProgress,
-            center = Offset(dotX, dotY),
-            style = Fill
-        )
-    }
-
-    // 4. Camada de 16 Pétalas Intermediárias com nervura central
-    val midPetals = 16
-    val midRadius = maxRadius * 0.58f
-    val baseMidRadius = maxRadius * 0.33f
-    for (i in 0 until midPetals) {
-        val angle = baseAngleRad + (i * 2 * PI / midPetals).toFloat()
-        val step = (PI / midPetals).toFloat()
-
-        val pLeftX = cx + baseMidRadius * cos(angle - step)
-        val pLeftY = cy + baseMidRadius * sin(angle - step)
-        val pRightX = cx + baseMidRadius * cos(angle + step)
-        val pRightY = cy + baseMidRadius * sin(angle + step)
-        val tipX = cx + midRadius * cos(angle)
-        val tipY = cy + midRadius * sin(angle)
-
-        val c1X = cx + (midRadius * 0.75f) * cos(angle - step * 0.5f)
-        val c1Y = cy + (midRadius * 0.75f) * sin(angle - step * 0.5f)
-        val c2X = cx + (midRadius * 0.75f) * cos(angle + step * 0.5f)
-        val c2Y = cy + (midRadius * 0.75f) * sin(angle + step * 0.5f)
-
-        val path = Path().apply {
-            moveTo(pLeftX, pLeftY)
-            quadraticTo(c1X, c1Y, tipX, tipY)
-            quadraticTo(c2X, c2Y, pRightX, pRightY)
-        }
-        drawPath(
-            path = path,
             color = goldMain,
-            style = Stroke(width = 1.2.dp.toPx(), cap = StrokeCap.Round)
-        )
-
-        // Nervura central da pétala
-        val innerVeinX = cx + baseMidRadius * cos(angle)
-        val innerVeinY = cy + baseMidRadius * sin(angle)
-        drawLine(
-            color = goldLight,
-            start = Offset(innerVeinX, innerVeinY),
-            end = Offset(tipX * 0.95f + cx * 0.05f, tipY * 0.95f + cy * 0.05f),
-            strokeWidth = 0.8.dp.toPx(),
-            cap = StrokeCap.Round
-        )
-    }
-
-    // 5. Segundo Anel de Delimitação
-    val ring2Radius = maxRadius * 0.60f
-    drawCircle(
-        color = goldDeep,
-        radius = ring2Radius,
-        center = Offset(cx, cy),
-        style = Stroke(width = 1.0.dp.toPx())
-    )
-
-    // 6. As 16 Grandes Pétalas Externas da Coroa Solar Solarium (Gothic/Ogee Arches)
-    val outerPetals = 16
-    val outerTipRadius = maxRadius * 0.98f
-    val outerBaseRadius = maxRadius * 0.61f
-
-    for (i in 0 until outerPetals) {
-        val angle = baseAngleRad + (i * 2 * PI / outerPetals).toFloat()
-        val step = (PI / outerPetals).toFloat()
-
-        val baseLeftX = cx + outerBaseRadius * cos(angle - step)
-        val baseLeftY = cy + outerBaseRadius * sin(angle - step)
-        val baseRightX = cx + outerBaseRadius * cos(angle + step)
-        val baseRightY = cy + outerBaseRadius * sin(angle + step)
-
-        val apexX = cx + outerTipRadius * cos(angle)
-        val apexY = cy + outerTipRadius * sin(angle)
-
-        // Curvatura Ogee (Gótica lanceolada)
-        val ctrl1X = cx + (outerTipRadius * 0.72f) * cos(angle - step * 0.7f)
-        val ctrl1Y = cy + (outerTipRadius * 0.72f) * sin(angle - step * 0.7f)
-        val ctrl2X = cx + (outerTipRadius * 0.88f) * cos(angle - step * 0.15f)
-        val ctrl2Y = cy + (outerTipRadius * 0.88f) * sin(angle - step * 0.15f)
-
-        val ctrl3X = cx + (outerTipRadius * 0.88f) * cos(angle + step * 0.15f)
-        val ctrl3Y = cy + (outerTipRadius * 0.88f) * sin(angle + step * 0.15f)
-        val ctrl4X = cx + (outerTipRadius * 0.72f) * cos(angle + step * 0.7f)
-        val ctrl4Y = cy + (outerTipRadius * 0.72f) * sin(angle + step * 0.7f)
-
-        val petalPath = Path().apply {
-            moveTo(baseLeftX, baseLeftY)
-            cubicTo(ctrl1X, ctrl1Y, ctrl2X, ctrl2Y, apexX, apexY)
-            cubicTo(ctrl3X, ctrl3Y, ctrl4X, ctrl4Y, baseRightX, baseRightY)
-        }
-
-        drawPath(
-            path = petalPath,
-            color = goldMain,
-            style = Stroke(width = 1.3.dp.toPx(), cap = StrokeCap.Round)
-        )
-
-        // Filigrana interna ornamental em cada pétala
-        val innerApexX = cx + (outerTipRadius * 0.82f) * cos(angle)
-        val innerApexY = cy + (outerTipRadius * 0.82f) * sin(angle)
-        val innerPath = Path().apply {
-            moveTo(
-                cx + (outerBaseRadius * 1.08f) * cos(angle - step * 0.6f),
-                cy + (outerBaseRadius * 1.08f) * sin(angle - step * 0.6f)
-            )
-            quadraticTo(
-                cx + (outerTipRadius * 0.68f) * cos(angle - step * 0.3f),
-                cy + (outerTipRadius * 0.68f) * sin(angle - step * 0.3f),
-                innerApexX,
-                innerApexY
-            )
-            quadraticTo(
-                cx + (outerTipRadius * 0.68f) * cos(angle + step * 0.3f),
-                cy + (outerTipRadius * 0.68f) * sin(angle + step * 0.3f),
-                cx + (outerBaseRadius * 1.08f) * cos(angle + step * 0.6f),
-                cy + (outerBaseRadius * 1.08f) * sin(angle + step * 0.6f)
-            )
-        }
-        drawPath(
-            path = innerPath,
-            color = goldLight.copy(alpha = 0.8f),
-            style = Stroke(width = 0.9.dp.toPx())
-        )
-
-        // Pérola dourada na ponta de cada ápice
-        drawCircle(
-            color = goldBright,
-            radius = 2.0.dp.toPx() * bloomProgress,
-            center = Offset(apexX, apexY),
-            style = Fill
+            radius = baseR * 0.22f,
+            center = Offset(cx, cy),
+            style = Stroke(width = strokeFine)
         )
         drawCircle(
             color = goldDeep,
-            radius = 2.0.dp.toPx() * bloomProgress,
-            center = Offset(apexX, apexY),
-            style = Stroke(width = 0.7.dp.toPx())
+            radius = baseR * 0.44f,
+            center = Offset(cx, cy),
+            style = Stroke(width = strokeFine)
         )
-    }
-}
-
-/**
- * Desenha a Fita de Luz Dourada em Órbita Elíptica 3D ao redor da mandala (Fase 2 do vídeo).
- */
-private fun DrawScope.drawGoldenOrbitRibbon(
-    progress: Float
-) {
-    val cx = size.width / 2f
-    val cy = size.height / 2f
-
-    // Inclinação da órbita 3D em ~28 graus
-    val tiltAngle = Math.toRadians(-28.0).toFloat()
-    val rx = size.width * 0.44f
-    val ry = size.height * 0.22f
-
-    // Ângulo da cabeça da fita conforme o progresso
-    val sweepAngle = progress * 3.2f * (2 * PI).toFloat()
-    val tailLength = (PI * 0.75f).toFloat() // Cauda luminosa de ~135 graus
-
-    val steps = 36
-    for (i in 0 until steps) {
-        val frac = i.toFloat() / steps
-        val currentTheta = sweepAngle - (tailLength * frac)
-
-        // Coordenadas elípticas no plano inclinado
-        val unrotatedX = rx * cos(currentTheta)
-        val unrotatedY = ry * sin(currentTheta)
-
-        val px = cx + (unrotatedX * cos(tiltAngle) - unrotatedY * sin(tiltAngle))
-        val py = cy + (unrotatedX * sin(tiltAngle) + unrotatedY * cos(tiltAngle))
-
-        val alpha = (1f - frac) * (1f - frac)
-        val radius = (4.5f * (1f - frac * 0.7f)).dp.toPx()
-
-        // Núcleo brilhante branco puro
         drawCircle(
-            color = Color.White.copy(alpha = alpha * 0.95f),
-            radius = radius * 0.6f,
-            center = Offset(px, py)
+            color = goldMain,
+            radius = baseR * 0.65f,
+            center = Offset(cx, cy),
+            style = Stroke(width = strokeFine)
         )
-        // Halo dourado envolvente
         drawCircle(
-            color = Color(0xFFE5C46E).copy(alpha = alpha * 0.60f),
-            radius = radius * 1.5f,
-            center = Offset(px, py)
+            color = goldLight,
+            radius = baseR * 0.88f,
+            center = Offset(cx, cy),
+            style = Stroke(width = strokeFine)
         )
-    }
 
-    // Centelha de luz intensa na cabeça da fita
-    val headTheta = sweepAngle
-    val headX = cx + (rx * cos(headTheta) * cos(tiltAngle) - ry * sin(headTheta) * sin(tiltAngle))
-    val headY = cy + (rx * cos(headTheta) * sin(tiltAngle) + ry * sin(headTheta) * cos(tiltAngle))
+        // 2. Núcleo central: Ponto e 8 pétalas de lótus
+        drawCircle(
+            color = goldBright,
+            radius = 2.5.dp.toPx(),
+            center = Offset(cx, cy),
+            style = Fill
+        )
 
-    drawCircle(
-        brush = Brush.radialGradient(
-            colors = listOf(
-                Color.White,
-                Color(0xFFFFF2C2),
-                Color(0xFFE0BE68).copy(alpha = 0.5f),
-                Color.Transparent
-            ),
-            center = Offset(headX, headY),
-            radius = 22.dp.toPx()
-        ),
-        radius = 22.dp.toPx(),
-        center = Offset(headX, headY)
-    )
-}
+        val innerPetals = 8
+        val innerBaseR = baseR * 0.08f
+        val innerTipR = baseR * 0.22f
+        for (i in 0 until innerPetals) {
+            val angle = (i * 2.0 * PI / innerPetals).toFloat()
+            val step = (PI / innerPetals).toFloat()
 
-/**
- * Desenha a Explosão de Raios Solares Radiantes (Sunburst Dourado) emanando por trás da mandala.
- */
-private fun DrawScope.drawSunburstRays(
-    progress: Float,
-    pulse: Float
-) {
-    val cx = size.width / 2f
-    val cy = size.height / 2f
-    val baseRadius = size.width * 0.22f
-    val maxRayLength = (size.width * 0.72f * progress * pulse)
+            val bx1 = cx + innerBaseR * cos(angle - step)
+            val by1 = cy + innerBaseR * sin(angle - step)
+            val bx2 = cx + innerBaseR * cos(angle + step)
+            val by2 = cy + innerBaseR * sin(angle + step)
+            val tx = cx + innerTipR * cos(angle)
+            val ty = cy + innerTipR * sin(angle)
 
-    val rayCount = 32
-    for (i in 0 until rayCount) {
-        val angle = (i * 2 * PI / rayCount).toFloat()
-        val isMajor = i % 2 == 0
+            // Pétala pontiaguda
+            val path = Path().apply {
+                moveTo(bx1, by1)
+                quadraticTo(
+                    cx + (innerTipR * 0.65f) * cos(angle - step * 0.5f),
+                    cy + (innerTipR * 0.65f) * sin(angle - step * 0.5f),
+                    tx, ty
+                )
+                quadraticTo(
+                    cx + (innerTipR * 0.65f) * cos(angle + step * 0.5f),
+                    cy + (innerTipR * 0.65f) * sin(angle + step * 0.5f),
+                    bx2, by2
+                )
+            }
+            drawPath(path, color = goldMain, style = Stroke(width = strokeFine, cap = StrokeCap.Round))
 
-        val rayLength = if (isMajor) maxRayLength else maxRayLength * 0.62f
-        val tipX = cx + (baseRadius + rayLength) * cos(angle)
-        val tipY = cy + (baseRadius + rayLength) * sin(angle)
-
-        val halfWidthAngle = (PI / (rayCount * 3.8f)).toFloat()
-        val b1X = cx + baseRadius * cos(angle - halfWidthAngle)
-        val b1Y = cy + baseRadius * sin(angle - halfWidthAngle)
-        val b2X = cx + baseRadius * cos(angle + halfWidthAngle)
-        val b2Y = cy + baseRadius * sin(angle + halfWidthAngle)
-
-        val rayPath = Path().apply {
-            moveTo(b1X, b1Y)
-            lineTo(tipX, tipY)
-            lineTo(b2X, b2Y)
-            close()
+            // Nervura central da pétala
+            drawLine(
+                color = goldLight,
+                start = Offset(cx + innerBaseR * cos(angle), cy + innerBaseR * sin(angle)),
+                end = Offset(tx, ty),
+                strokeWidth = strokeFine * 0.8f
+            )
         }
 
-        drawPath(
-            path = rayPath,
-            brush = Brush.linearGradient(
+        // 3. Anel de 16 pequenas cúspides e pérolas intermediárias
+        val count16 = 16
+        val ringR = baseR * 0.44f
+        for (i in 0 until count16) {
+            val angle = (i * 2.0 * PI / count16).toFloat()
+            val px = cx + ringR * cos(angle)
+            val py = cy + ringR * sin(angle)
+            drawCircle(
+                color = goldBright,
+                radius = 1.8.dp.toPx(),
+                center = Offset(px, py),
+                style = Fill
+            )
+        }
+
+        // 4. Camada intermediária de 16 pétalas de lótus entrelaçadas
+        val midBaseR = baseR * 0.44f
+        val midTipR = baseR * 0.65f
+        for (i in 0 until count16) {
+            val angle = (i * 2.0 * PI / count16).toFloat()
+            val step = (PI / count16).toFloat()
+
+            val bx1 = cx + midBaseR * cos(angle - step)
+            val by1 = cy + midBaseR * sin(angle - step)
+            val bx2 = cx + midBaseR * cos(angle + step)
+            val by2 = cy + midBaseR * sin(angle + step)
+            val tx = cx + midTipR * cos(angle)
+            val ty = cy + midTipR * sin(angle)
+
+            val path = Path().apply {
+                moveTo(bx1, by1)
+                quadraticTo(
+                    cx + (midTipR * 0.72f) * cos(angle - step * 0.5f),
+                    cy + (midTipR * 0.72f) * sin(angle - step * 0.5f),
+                    tx, ty
+                )
+                quadraticTo(
+                    cx + (midTipR * 0.72f) * cos(angle + step * 0.5f),
+                    cy + (midTipR * 0.72f) * sin(angle + step * 0.5f),
+                    bx2, by2
+                )
+            }
+            drawPath(path, color = goldMain, style = Stroke(width = strokeFine, cap = StrokeCap.Round))
+
+            // Detalhe interno da pétala intermediária
+            val subTipX = cx + (midTipR * 0.85f) * cos(angle)
+            val subTipY = cy + (midTipR * 0.85f) * sin(angle)
+            drawLine(
+                color = goldLight,
+                start = Offset(cx + (midBaseR * 1.05f) * cos(angle), cy + (midBaseR * 1.05f) * sin(angle)),
+                end = Offset(subTipX, subTipY),
+                strokeWidth = strokeFine * 0.8f
+            )
+        }
+
+        // 5. Camada externa majestosa: 16 grandes pétalas góticas com ornamentos pontiagudos
+        val outerBaseR = baseR * 0.65f
+        val outerTipR = baseR * 0.91f
+        for (i in 0 until count16) {
+            val angle = (i * 2.0 * PI / count16).toFloat()
+            val step = (PI / count16).toFloat()
+
+            val bx1 = cx + outerBaseR * cos(angle - step)
+            val by1 = cy + outerBaseR * sin(angle - step)
+            val bx2 = cx + outerBaseR * cos(angle + step)
+            val by2 = cy + outerBaseR * sin(angle + step)
+            val tx = cx + outerTipR * cos(angle)
+            val ty = cy + outerTipR * sin(angle)
+
+            // Pétala gótica com dupla curvatura elegante
+            val petalPath = Path().apply {
+                moveTo(bx1, by1)
+                cubicTo(
+                    cx + (outerBaseR + (outerTipR - outerBaseR) * 0.35f) * cos(angle - step * 0.85f),
+                    cy + (outerBaseR + (outerTipR - outerBaseR) * 0.35f) * sin(angle - step * 0.85f),
+                    cx + (outerBaseR + (outerTipR - outerBaseR) * 0.75f) * cos(angle - step * 0.25f),
+                    cy + (outerBaseR + (outerTipR - outerBaseR) * 0.75f) * sin(angle - step * 0.25f),
+                    tx, ty
+                )
+                cubicTo(
+                    cx + (outerBaseR + (outerTipR - outerBaseR) * 0.75f) * cos(angle + step * 0.25f),
+                    cy + (outerBaseR + (outerTipR - outerBaseR) * 0.75f) * sin(angle + step * 0.25f),
+                    cx + (outerBaseR + (outerTipR - outerBaseR) * 0.35f) * cos(angle + step * 0.85f),
+                    cy + (outerBaseR + (outerTipR - outerBaseR) * 0.35f) * sin(angle + step * 0.85f),
+                    bx2, by2
+                )
+            }
+            drawPath(
+                path = petalPath,
+                color = goldMain,
+                style = Stroke(width = strokeBold, cap = StrokeCap.Round, join = StrokeJoin.Round)
+            )
+
+            // Arco interno decorativo dentro da grande pétala
+            val innerTx = cx + (outerTipR * 0.82f) * cos(angle)
+            val innerTy = cy + (outerTipR * 0.82f) * sin(angle)
+            val innerP = Path().apply {
+                moveTo(
+                    cx + (outerBaseR * 1.05f) * cos(angle - step * 0.6f),
+                    cy + (outerBaseR * 1.05f) * sin(angle - step * 0.6f)
+                )
+                quadraticTo(
+                    cx + (outerBaseR * 1.15f) * cos(angle),
+                    cy + (outerBaseR * 1.15f) * sin(angle),
+                    innerTx, innerTy
+                )
+                quadraticTo(
+                    cx + (outerBaseR * 1.15f) * cos(angle),
+                    cy + (outerBaseR * 1.15f) * sin(angle),
+                    cx + (outerBaseR * 1.05f) * cos(angle + step * 0.6f),
+                    cy + (outerBaseR * 1.05f) * sin(angle + step * 0.6f)
+                )
+            }
+            drawPath(innerP, color = goldLight, style = Stroke(width = strokeFine * 0.8f))
+
+            // Haste radial no topo de cada ápice com 3 pérolas douradas (exatamente como no vídeo)
+            val dot1R = outerTipR + baseR * 0.025f
+            val dot2R = outerTipR + baseR * 0.055f
+            val dot3R = outerTipR + baseR * 0.082f
+
+            drawCircle(color = goldMain, radius = 1.8.dp.toPx(), center = Offset(cx + dot1R * cos(angle), cy + dot1R * sin(angle)))
+            drawCircle(color = goldBright, radius = 1.4.dp.toPx(), center = Offset(cx + dot2R * cos(angle), cy + dot2R * sin(angle)))
+            drawCircle(color = goldDeep, radius = 1.0.dp.toPx(), center = Offset(cx + dot3R * cos(angle), cy + dot3R * sin(angle)))
+
+            // Ponta intermediária suave entre as 16 pétalas grandes
+            val midAngle = angle + step
+            val interTipR = outerBaseR + (outerTipR - outerBaseR) * 0.45f
+            drawLine(
+                color = goldDeep,
+                start = Offset(cx + outerBaseR * cos(midAngle), cy + outerBaseR * sin(midAngle)),
+                end = Offset(cx + interTipR * cos(midAngle), cy + interTipR * sin(midAngle)),
+                strokeWidth = strokeFine
+            )
+            drawCircle(
+                color = goldBright,
+                radius = 1.2.dp.toPx(),
+                center = Offset(cx + interTipR * cos(midAngle), cy + interTipR * sin(midAngle))
+            )
+        }
+    }
+}
+
+/**
+ * Fita de Luz Dourada Fluida (Golden Ribbon Orbit) com cauda e rastro de luz.
+ * Circunda a mandala em um movimento espiral 3D elíptico idêntico ao do vídeo (00:02 a 00:04).
+ */
+@Composable
+private fun GoldenRibbonOrbitalCanvas(
+    progress: Float,
+    alpha: Float,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val rx = size.width * 0.46f
+        val ry = size.height * 0.28f
+
+        // Ângulo da cabeça da fita: dá ~2 voltas completas em torno da mandala
+        val totalRotation = 2.2f * 2f * PI.toFloat()
+        val currentHeadAngle = -PI.toFloat() * 0.5f + totalRotation * progress
+        val tailLength = 1.4f * PI.toFloat() // Extensão do rastro luminoso
+
+        val steps = 30
+        for (i in 0 until steps) {
+            val ratio = i.toFloat() / steps
+            val pointAngle = currentHeadAngle - tailLength * (1f - ratio)
+
+            // Inclinação 3D da órbita elíptica (rotacionada ~25 graus)
+            val tilt = -0.42f
+            val rawX = rx * cos(pointAngle)
+            val rawY = ry * sin(pointAngle)
+
+            val rotX = rawX * cos(tilt) - rawY * sin(tilt)
+            val rotY = rawX * sin(tilt) + rawY * cos(tilt)
+
+            val px = cx + rotX
+            val py = cy + rotY
+
+            val pointAlpha = alpha * (ratio * ratio) * 0.95f
+            val pointRadius = (0.8.dp.toPx() + 3.2.dp.toPx() * ratio)
+
+            if (pointAlpha > 0.02f) {
+                // Brilho exterior suave
+                drawCircle(
+                    color = Color(0xFFFDE68A).copy(alpha = pointAlpha * 0.4f),
+                    radius = pointRadius * 2.2f,
+                    center = Offset(px, py)
+                )
+                // Núcleo de ouro branco brilhante
+                drawCircle(
+                    color = Color(0xFFFFFBEB).copy(alpha = pointAlpha),
+                    radius = pointRadius,
+                    center = Offset(px, py)
+                )
+            }
+        }
+
+        // Cabeça da fita luminosa com faísca intensa
+        val headRawX = rx * cos(currentHeadAngle)
+        val headRawY = ry * sin(currentHeadAngle)
+        val headTilt = -0.42f
+        val headX = cx + (headRawX * cos(headTilt) - headRawY * sin(headTilt))
+        val headY = cy + (headRawX * sin(headTilt) + headRawY * cos(headTilt))
+
+        // Aura de luz na cabeça
+        drawCircle(
+            color = Color(0xFFFFFDF5).copy(alpha = alpha),
+            radius = 6.dp.toPx(),
+            center = Offset(headX, headY)
+        )
+        drawCircle(
+            color = Color(0xFFFFE082).copy(alpha = alpha * 0.7f),
+            radius = 12.dp.toPx(),
+            center = Offset(headX, headY)
+        )
+    }
+}
+
+/**
+ * Clímax dos Raios Solares Dourados (Sunburst Rays).
+ * Reflete o ápice espetacular visto no vídeo em 00:07 a 00:09:
+ * Feixes afiados de luz dourada intensa que brotam de trás do texto e da mandala.
+ */
+@Composable
+private fun GoldenSunburstCanvas(
+    alpha: Float,
+    scale: Float,
+    time: Float,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val cx = size.width / 2f
+        val cy = size.height / 2f
+        val maxLen = size.width * 0.52f * scale
+
+        // 1. Auréola Solar Central Brilhante
+        val haloBrush = Brush.radialGradient(
+            colors = listOf(
+                Color(0xFFFFFBEA).copy(alpha = alpha * 0.85f),
+                Color(0xFFFFEEA8).copy(alpha = alpha * 0.55f),
+                Color(0xFFE5BE64).copy(alpha = alpha * 0.25f),
+                Color.Transparent
+            ),
+            center = Offset(cx, cy),
+            radius = maxLen * 0.85f
+        )
+        drawCircle(
+            brush = haloBrush,
+            radius = maxLen * 0.85f,
+            center = Offset(cx, cy)
+        )
+
+        // 2. 32 Feixes de Luz Dourada Afiados e Cintilantes (Sunburst)
+        val rayCount = 32
+        for (i in 0 until rayCount) {
+            val angle = (i * 2.0 * PI / rayCount).toFloat()
+            // Alternância entre raios longos majestosos e intermediários
+            val isMajor = (i % 2 == 0)
+            val isCardinal = (i % 4 == 0)
+
+            val baseRayLen = when {
+                isCardinal -> maxLen * 1.05f
+                isMajor -> maxLen * 0.88f
+                else -> maxLen * 0.65f
+            }
+
+            // Cintilação sutil nos raios
+            val shimmer = 0.92f + 0.08f * sin(time * 3f + i)
+            val rayLen = baseRayLen * shimmer
+
+            val innerR = size.width * 0.12f
+            val halfWidth = if (isCardinal) (PI / 80f).toFloat() else (PI / 120f).toFloat()
+
+            val p1X = cx + innerR * cos(angle - halfWidth)
+            val p1Y = cy + innerR * sin(angle - halfWidth)
+            val p2X = cx + innerR * cos(angle + halfWidth)
+            val p2Y = cy + innerR * sin(angle + halfWidth)
+            val tipX = cx + rayLen * cos(angle)
+            val tipY = cy + rayLen * sin(angle)
+
+            val rayBrush = Brush.linearGradient(
                 colors = listOf(
-                    Color(0xFFF7E298).copy(alpha = 0.85f),
-                    Color(0xFFD6AF52).copy(alpha = 0.45f),
-                    Color(0xFFB58E3A).copy(alpha = 0.12f),
+                    Color(0xFFFFF9DB).copy(alpha = alpha * (if (isMajor) 0.85f else 0.55f)),
+                    Color(0xFFE2BE68).copy(alpha = alpha * (if (isMajor) 0.60f else 0.35f)),
                     Color.Transparent
                 ),
                 start = Offset(cx, cy),
                 end = Offset(tipX, tipY)
             )
-        )
+
+            val rayPath = Path().apply {
+                moveTo(p1X, p1Y)
+                lineTo(tipX, tipY)
+                lineTo(p2X, p2Y)
+                close()
+            }
+            drawPath(path = rayPath, brush = rayBrush)
+        }
+
+        // 3. Estrelas de Brilho Solar Cintilante de 4 pontas nas pontas principais
+        val sparkleAngles = listOf(0f, PI.toFloat() * 0.5f, PI.toFloat(), PI.toFloat() * 1.5f)
+        for (a in sparkleAngles) {
+            val dist = maxLen * 0.78f
+            val sx = cx + dist * cos(a)
+            val sy = cy + dist * sin(a)
+            val sparkLen = 8.dp.toPx()
+
+            drawLine(
+                color = Color(0xFFFFFBEB).copy(alpha = alpha * 0.8f),
+                start = Offset(sx - sparkLen, sy),
+                end = Offset(sx + sparkLen, sy),
+                strokeWidth = 1.5.dp.toPx(),
+                cap = StrokeCap.Round
+            )
+            drawLine(
+                color = Color(0xFFFFFBEB).copy(alpha = alpha * 0.8f),
+                start = Offset(sx, sy - sparkLen),
+                end = Offset(sx, sy + sparkLen),
+                strokeWidth = 1.5.dp.toPx(),
+                cap = StrokeCap.Round
+            )
+        }
     }
 }
 
 /**
- * Fundo de poeira estelar dourada, triângulos e partículas flutuantes sutis.
+ * Poeira de Ouro e Fragmentos Triangulares Flutuantes (vistos claramente nos frames 00:02 e 00:03).
  */
 @Composable
-private fun GoldenDustBackground(animTime: Float) {
-    // Lista fixa determinística de 28 partículas estelares para performance e fluidez
-    val particles = remember {
-        List(28) { index ->
-            val angle = (index * 13.0) * (PI / 180.0)
-            val dist = 0.15f + (index % 7) * 0.11f
-            val size = 2.0f + (index % 4) * 1.5f
-            val isShard = index % 3 == 0
-            val speed = 0.2f + (index % 5) * 0.15f
-            ParticleDef(angle.toFloat(), dist, size, isShard, speed)
-        }
-    }
-
-    Canvas(modifier = Modifier.fillMaxSize()) {
+private fun GoldenParticlesAndFloatingShapes(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
         val cx = size.width / 2f
         val cy = size.height / 2f
 
-        particles.forEach { p ->
-            val currentDist = (p.baseDist * size.width + sin(animTime * p.speed + p.angle) * 12.dp.toPx())
-            val currentAngle = p.angle + animTime * 0.04f * p.speed
+        // Pontos de partículas douradas com leve deriva orbital
+        val particleOffsets = listOf(
+            Offset(-110f, -140f), Offset(130f, -120f), Offset(-140f, 90f),
+            Offset(120f, 130f), Offset(-60f, -180f), Offset(80f, -160f),
+            Offset(-90f, 170f), Offset(70f, 180f), Offset(-170f, -40f),
+            Offset(160f, 40f), Offset(-30f, 140f), Offset(40f, -120f)
+        )
 
-            val px = cx + currentDist * cos(currentAngle)
-            val py = cy + currentDist * sin(currentAngle)
+        particleOffsets.forEachIndexed { index, base ->
+            val driftAngle = (progress * 2f * PI.toFloat() + index).toFloat()
+            val px = cx + base.x.dp.toPx() + 6f * cos(driftAngle)
+            val py = cy + base.y.dp.toPx() + 6f * sin(driftAngle)
 
-            val alpha = (0.25f + 0.55f * sin(animTime * 1.8f + p.angle)).coerceIn(0.1f, 0.85f)
+            val pAlpha = (0.35f + 0.45f * sin((progress * 4f + index).toFloat())).coerceIn(0f, 1f)
+            val r = if (index % 3 == 0) 1.8.dp.toPx() else 1.1.dp.toPx()
 
-            if (p.isShard) {
-                // Fragmento triangular dourado metálico acetinado
-                val shardSize = p.size.dp.toPx()
-                val shardPath = Path().apply {
-                    moveTo(px, py - shardSize)
-                    lineTo(px + shardSize * 0.8f, py + shardSize * 0.6f)
-                    lineTo(px - shardSize * 0.8f, py + shardSize * 0.6f)
-                    close()
-                }
-                drawPath(
-                    path = shardPath,
-                    color = Color(0xFFBFA567).copy(alpha = alpha * 0.85f),
-                    style = Fill
-                )
-            } else {
-                // Ponto de luz cintilante
-                drawCircle(
-                    color = Color(0xFFE8D6A6).copy(alpha = alpha * 0.85f),
-                    radius = p.size.dp.toPx() * 0.6f,
-                    center = Offset(px, py)
-                )
+            drawCircle(
+                color = Color(0xFFE5CA80).copy(alpha = pAlpha),
+                radius = r,
+                center = Offset(px, py)
+            )
+        }
+
+        // Triângulos dourados flutuantes característicos do vídeo (frames 00:02 a 00:04)
+        val triangles = listOf(
+            Triple(Offset(-130f, 120f), 6.dp.toPx(), 0.6f),
+            Triple(Offset(140f, -110f), 5.dp.toPx(), -0.4f),
+            Triple(Offset(-90f, -130f), 4.5.dp.toPx(), 1.2f),
+            Triple(Offset(110f, 140f), 5.5.dp.toPx(), -1.1f)
+        )
+
+        triangles.forEach { (pos, sizePx, rot) ->
+            val tx = cx + pos.x.dp.toPx() + 8f * cos(progress * 3f + rot)
+            val ty = cy + pos.y.dp.toPx() + 8f * sin(progress * 3f + rot)
+
+            val triPath = Path().apply {
+                moveTo(tx, ty - sizePx)
+                lineTo(tx - sizePx * 0.86f, ty + sizePx * 0.5f)
+                lineTo(tx + sizePx * 0.86f, ty + sizePx * 0.5f)
+                close()
             }
+            drawPath(
+                path = triPath,
+                color = Color(0xFFD4B160).copy(alpha = 0.55f)
+            )
         }
     }
 }
-
-private data class ParticleDef(
-    val angle: Float,
-    val baseDist: Float,
-    val size: Float,
-    val isShard: Boolean,
-    val speed: Float
-)
