@@ -34,14 +34,21 @@ data class MapLocation(
     val latitude: Double,
     val longitude: Double,
     val distanceEstimate: String,
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val plusCode: String? = null,
+    val rating: Float? = null,
+    val reviewsCount: Int? = null,
+    val openingHours: String? = null,
+    val googleMapsUrl: String? = null,
+    val phone: String? = null
 )
 
 enum class LocationCategory(val label: String) {
     HOUSE("A Casa & Arredores"),
-    SERVICES("Serviços & Coleta"),
+    EMERGENCY("Emergência & Saúde"),
     ATTRACTION("Passeios & Lazer"),
-    FOOD("Gastronomia & Cafés"),
+    FOOD("Gastronomia & Bares"),
+    SERVICES("Serviços & Coleta"),
     TRANSPORT("Transporte & Ônibus")
 }
 
