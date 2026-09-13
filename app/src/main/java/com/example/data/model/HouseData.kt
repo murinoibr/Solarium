@@ -21,7 +21,8 @@ data class SectionItem(
     val title: String,
     val description: String,
     val steps: List<String> = emptyList(),
-    val badge: String? = null
+    val badge: String? = null,
+    val note: String? = null
 )
 
 data class MapLocation(

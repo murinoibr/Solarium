@@ -346,41 +346,6 @@ private fun RecommendationCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Insider Host Tip
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lightbulb,
-                        contentDescription = "Dica da Valéria",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text(
-                            text = "Dica da Anfitriã Valéria:",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = recommendation.hostTip,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
             // Info tags: Price & Location
             Row(
                 modifier = Modifier.fillMaxWidth(),

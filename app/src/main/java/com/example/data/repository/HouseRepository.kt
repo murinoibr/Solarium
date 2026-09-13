@@ -29,17 +29,13 @@ object HouseRepository {
         ManualSection(
             id = 1,
             title = "Bem-vindos",
-            subtitle = "Sua estadia aconchegante em São Lourenço",
-            shortSummary = "Seja muito bem-vindo! Esperamos que sua estadia seja incrível e revigorante.",
+            subtitle = "Este manual reúne o que você precisa saber para aproveitar a casa e a cidade com conforto e tranquilidade",
+            shortSummary = "Este manual reúne o que você precisa saber para aproveitar a casa e a cidade com conforto e tranquilidade.",
             iconName = "Favorite",
             accentColorHex = 0xFFC85A32,
             imageUrl = "https://a0.muscache.com/im/pictures/hosting/Hosting-1143502588915376302/original/af2bb15c-883e-4228-babe-c15897967312.jpeg",
             roomCategory = "Fachada & Solarium",
             items = listOf(
-                SectionItem(
-                    title = "Mensagem da Anfitriã",
-                    description = "Olá! Preparamos este espaço com muito carinho para você e sua família relaxarem nas montanhas de Minas Gerais. Este manual digital reúne tudo o que você precisa saber para aproveitar a casa e a cidade com total conforto e tranquilidade."
-                ),
                 SectionItem(
                     title = "Acesso Rápido ao Wi-Fi",
                     description = "Rede: $WIFI_SSID | Senha: $WIFI_PASSWORD",
@@ -92,8 +88,8 @@ object HouseRepository {
         ManualSection(
             id = 3,
             title = "Chegada / Check-in",
-            subtitle = "Horário, chaves, portão e senha do Wi-Fi",
-            shortSummary = "Check-in a partir das 13h, chaves e dica da porta antiga.",
+            subtitle = "O Check-in está liberado a partir das 13h00 favor informar ao anfitrião o horário aproximado para entrega das chaves.",
+            shortSummary = "O Check-in está liberado a partir das 13h00 favor informar ao anfitrião o horário aproximado para entrega das chaves.",
             iconName = "Key",
             accentColorHex = 0xFFB87010,
             imageUrl = "https://a0.muscache.com/im/pictures/hosting/Hosting-1143502588915376302/original/cc042dc9-b8d6-4086-b4ab-641878a23f2d.jpeg",
@@ -101,8 +97,8 @@ object HouseRepository {
             items = listOf(
                 SectionItem(
                     title = "Horário de Check-in",
-                    description = "O check-in está liberado a partir das 13:00 horas.",
-                    badge = "A partir das 13h"
+                    description = "O Check-in está liberado a partir das 13h00 favor informar ao anfitrião o horário aproximado para entrega das chaves.",
+                    badge = "A partir das 13h00"
                 ),
                 SectionItem(
                     title = "Rede Wi-Fi",
@@ -115,13 +111,14 @@ object HouseRepository {
                 ),
                 SectionItem(
                     title = "Porta de Entrada da Casa (Importante!)",
-                    description = "É uma porta antiga charmosa. Para conseguir abri-la com facilidade, deve-se puxar a porta suavemente para fora com uma mão enquanto gira a chave com a outra.",
+                    description = "É uma porta antiga charmosa. Para conseguir abri-la com facilidade, deve-se puxar a porta para fora com uma mão enquanto gira a chave suavemente com a outra.",
                     badge = "Dica Essencial"
                 ),
                 SectionItem(
                     title = "Portão Eletrônico (Carros)",
                     description = "Para abrir e fechar o portão de carros, aperte o botão superior direito do controle remoto.",
-                    badge = "Controle Remoto"
+                    badge = "Controle Remoto",
+                    note = "Lembre-se de conferir…😉"
                 )
             ),
             tips = listOf(
@@ -129,7 +126,7 @@ object HouseRepository {
                 "A chave preta deve ser guardada com cuidado e utilizada somente em emergências."
             ),
             warnings = listOf(
-                "Não force a chave na porta antiga da sala; basta puxar a folha da porta para fora com a outra mão enquanto gira suavemente a chave."
+                "Não force a chave na porta antiga da sala; basta puxar a folha da porta para fora com a outra mão enquanto gira a chave suavemente."
             )
         ),
 
@@ -137,7 +134,7 @@ object HouseRepository {
         ManualSection(
             id = 4,
             title = "Entretenimento na Casa",
-            subtitle = "Pátio, rede, piano, espreguiçadeiras e TV",
+            subtitle = "Pátio, churrasqueira, rede, piano e TV",
             shortSummary = "Espaço ao ar livre, relaxamento e passo a passo dos controles da TV.",
             iconName = "Tv",
             accentColorHex = 0xFF5856D6,
@@ -146,15 +143,20 @@ object HouseRepository {
             items = listOf(
                 SectionItem(
                     title = "Pátio e Varandas",
-                    description = "Aproveite as espreguiçadeiras ao ar livre. As mesas e cadeiras de plástico que estão na cozinha podem ser levadas livremente para o pátio para refeições ao ar livre."
+                    description = "Aproveite as espreguiçadeiras ao ar livre. As mesas e cadeiras de plástico que estão na cozinha podem ser levadas livremente para o pátio para refeições ao ar livre.",
+                    note = "Lembre-se de recolhê-las em caso de chuva…😉"
+                ),
+                SectionItem(
+                    title = "Churrasqueira",
+                    description = "Há uma pequena churrasqueira portátil no espaço da samambaia."
                 ),
                 SectionItem(
                     title = "Rede de Descanso",
-                    description = "Uma rede macia disponível para descanso e leitura na varanda."
+                    description = "Há uma rede disponível na varanda do segundo piso"
                 ),
                 SectionItem(
                     title = "Piano",
-                    description = "Disponível para tocar e relaxar com boas melodias durante a estadia."
+                    description = "Disponível para quem gostar de tocar boas melodias durante a estadia"
                 ),
                 SectionItem(
                     title = "Guia da TV & Controles Remotos",
@@ -179,7 +181,7 @@ object HouseRepository {
             id = 5,
             title = "Cama, Banho & Conforto",
             subtitle = "Roupas extras, máquina de lavar e comodidades",
-            shortSummary = "Enxoval completo, localização do secador e uso da máquina de lavar.",
+            shortSummary = "Enxoval completo, ferro, varal, cabides e uso da máquina de lavar.",
             iconName = "Bed",
             accentColorHex = 0xFF007AFF,
             imageUrl = "https://a0.muscache.com/im/pictures/hosting/Hosting-1143502588915376302/original/0c3ef2f5-1b19-48fc-9166-28c5564b0c11.jpeg",
@@ -196,7 +198,7 @@ object HouseRepository {
                 ),
                 SectionItem(
                     title = "Máquina de Lavar Roupas",
-                    description = "Instrução obrigatória de uso:\n1. ANTES de escolher o programa de lavagem, gire o botão seletor para a posição 'DESLIGAR'.\n2. Só depois disso, selecione o programa e as configurações que desejar.\n3. O enchimento de água da máquina é bem lento, o que é perfeitamente normal.",
+                    description = "A casa conta também com ferro de passar e varal para estender roupas, sendo que o ferro de passar e o varal encontram-se na lavanderia (área de serviço externa). Há também cabides nos quartos de dormir.\n\n**Instrução obrigatória para a máquina de lavar:**\n1. ANTES de escolher o programa de lavagem, gire o botão seletor para a posição 'DESLIGAR'.\n2. Só depois disso, selecione o programa e as configurações que desejar.\n3. O enchimento de água da máquina é bem lento, o que é perfeitamente normal.",
                     badge = "Atenção ao Girar"
                 ),
                 SectionItem(
@@ -204,12 +206,8 @@ object HouseRepository {
                     description = "O secador de cabelo fica no rack da TV da sala, na prateleira do lado esquerdo.\nLá você também encontra sabonetes, shampoo, condicionador, papel higiênico e repelente."
                 ),
                 SectionItem(
-                    title = "Ventiladores & Ferro de Passar",
-                    description = "Os ventiladores ficam guardados no espaço embaixo da escada, caso necessário. Há também cabideiro com cabides, cortinas black-out, ferro de passar e varal para estender roupas."
-                ),
-                SectionItem(
-                    title = "Chuveiros Elétricos",
-                    description = "Água quentinha e abundante nos banheiros da casa."
+                    title = "Ventiladores & Climatização",
+                    description = "Os ventiladores ficam guardados no espaço embaixo da escada, caso necessário. Os quartos contam com cortinas black-out para o seu descanso."
                 )
             ),
             tips = listOf(
@@ -243,7 +241,7 @@ object HouseRepository {
                 ),
                 SectionItem(
                     title = "Despensa Básica de Cortesia",
-                    description = "Disponibilizamos para o seu uso: pó de café, açúcar, adoçante, sal, vinagre e variedade de chás relaxantes."
+                    description = "Disponibilizamos para o seu uso: pó de café, açúcar, adoçante, sal, vinagre, óleo de cozinha e variedades de chás relaxantes."
                 ),
                 SectionItem(
                     title = "Utensílios & Mesa",
@@ -297,16 +295,16 @@ object HouseRepository {
                 ),
                 SectionItem(
                     title = "Cuidados com a Estrutura da Casa",
-                    description = "• Piso Laminado: Não deve ficar molhado nem ser limpo com produtos químicos abrasivos. Evite usar calçados com saltos pontiagudos sobre o laminado.\n• Mesa de Jantar: O tampo é de vidro temperado; evite contato térmico direto com panelas ou refratários muito quentes."
+                    description = "• Piso Laminado do 1º Piso: Não deve ficar molhado nem ser limpo com produtos químicos abrasivos. Evite usar calçados com saltos pontiagudos sobre o laminado.\n• Mesa de Jantar: O tampo é de vidro temperado; evite contato térmico direto com panelas ou refratários muito quentes."
                 )
             ),
             tips = listOf(
-                "A luz verde piscando suavemente no corredor à noite é um sinal de que você e sua família estão protegidos pelos sensores de CO.",
+                "A luz verde piscando no corredor à noite é um sinal de que você e sua família estão protegidos pelos sensores de CO.",
                 "Deixe uma luz da varanda acessa se for circular perto do degrau da cozinha à noite."
             ),
             warnings = listOf(
                 "Cuidado com o degrau alto na saída da cozinha para a varanda!",
-                "Não molhe o piso laminado nem use produtos químicos agressivos."
+                "Não molhe o piso laminado do 1º piso nem use produtos químicos agressivos."
             )
         ),
 
@@ -375,11 +373,23 @@ object HouseRepository {
                 ),
                 SectionItem(
                     title = "Transporte Coletivo (Ônibus)",
-                    description = "Bem em frente à Pousada Le Sapé há uma parada de ônibus circular urbano que passa com frequência regular de 1 em 1 hora."
+                    description = "Localizado bem em frente à Pousada Le Sapé, há uma parada de ônibus circular urbano que passa com frequência regular de 1 em 1 hora. O ônibus intermunicipal para Soledade de Minas também passa de 1 em 1 hora e custa R$ 5,00."
                 ),
                 SectionItem(
                     title = "Rodoviária & Ônibus Intermunicipais",
-                    description = "Principais companhias rodoviárias que atendem a cidade:\n• Rio de Janeiro <-> São Lourenço: Viação Útil / Sampaio\n• São Paulo <-> São Lourenço: Viação Cometa\n• Linhas diretas para Brasília e Caxambu / Circuito das Águas"
+                    description = "Principais companhias rodoviárias, rotas e horários para São Lourenço:\n\n" +
+                        "🚌 **São Paulo (Tietê) ⇄ São Lourenço (Viação Cometa):**\n" +
+                        "• **Ida (SP ➔ SL):** 08:00, 12:15, 17:00, 19:30 e 23:30 (tempo médio de 5h45).\n" +
+                        "• **Volta (SL ➔ SP):** 08:45, 12:15, 14:30, 16:50 e 23:35 / 23:45.\n" +
+                        "• **Faixa de Valores:** Convencional (~R$ 164,99), Executivo (~R$ 169,99 a R$ 174,99) e Semileito (~R$ 174,99 a R$ 179,99).\n\n" +
+                        "🚌 **Rio de Janeiro (Novo Rio) ⇄ São Lourenço (Viação Sampaio):**\n" +
+                        "• **Ida (Rio ➔ SL):** 08:00, 11:00, 13:00, 20:30 e 21:30 (tempo médio de 5h30).\n" +
+                        "• **Volta (SL ➔ Rio):** 10:30, 16:10, 23:45 e 23:59 (tempo médio de 5h20 a 5h50).\n" +
+                        "• **Faixa de Valores:** Executivo (~R$ 110,00 a R$ 155,00), Semileito (~R$ 170,00 a R$ 186,00) e Leito (~R$ 225,00 a R$ 230,00).\n\n" +
+                        "🚌 **Linha Intermunicipal Próxima:**\n" +
+                        "• **Soledade de Minas:** Ônibus de 1 em 1 hora (R$ 5,00) com parada em frente à Pousada Le Sapé.\n" +
+                        "• Linhas para Brasília e cidades vizinhas do Circuito das Águas (Caxambu).",
+                    badge = "Cometa, Sampaio & Útil"
                 )
             ),
             tips = listOf(
@@ -438,7 +448,7 @@ object HouseRepository {
             category = LocationCategory.HOUSE,
             address = "Rua Pres. Castelo Branco, 95 - Ramon, São Lourenço - MG, CEP 37470-000",
             description = "O seu refúgio aconchegante em São Lourenço. 3 vagas de garagem, varanda com espreguiçadeiras e jardim privativo.",
-            tip = "Lembre-se: puxe a porta antiga suavemente para fora enquanto gira a chave no tambor!",
+            tip = "Lembre-se: puxe a porta antiga para fora enquanto gira a chave suavemente no tambor!",
             latitude = -22.112678,
             longitude = -45.056412,
             distanceEstimate = "0 metros (Você está aqui!)",
@@ -1061,8 +1071,8 @@ object HouseRepository {
             title = "Entrada Principal",
             category = FloorPlanCategory.ENTRANCE_ACCESS,
             roomOrZone = "Fachada Frontal / Sala",
-            description = "Porta de entrada principal charmosa e de estilo colonial. Segredo da fechadura: para destrancar e abrir com facilidade, puxe suavemente a folha da porta para fora com uma mão enquanto gira a chave no tambor.",
-            tipOrWarning = "Não force a chave: puxe a porta para fora suavemente com a outra mão ao girar a chave.",
+            description = "Porta de entrada principal charmosa e de estilo colonial. Segredo da fechadura: para destrancar e abrir com facilidade, puxe a folha da porta para fora com uma mão enquanto gira a chave suavemente no tambor.",
+            tipOrWarning = "Não force a chave: puxe a porta para fora com a outra mão ao girar a chave suavemente.",
             isWarning = false,
             badge = "Segredo da Chave",
             normX = 0.42f,
@@ -1570,11 +1580,23 @@ object HouseRepository {
             q.contains("whatsapp") || q.contains("zap") || q.contains("dona") || q.contains("proprietária") || q.contains("valéria") || q.contains("anfitriã") -> {
                 "💬 **WhatsApp Direto da Proprietária:**\n• **Anfitriã:** Valéria\n• **Telefone / WhatsApp:** $HOST_PHONE_DISPLAY\n\nVocê pode tocar no botão verde acima ou no botão do WhatsApp ao lado da caixa de mensagem para enviar sua dúvida diretamente para o celular dela!"
             }
+            q.contains("check-in") || q.contains("checkin") || q.contains("chegada") || q.contains("horário de entrada") || q.contains("entregar as chaves") -> {
+                "🔑 **Horário de Chegada / Check-in:**\nO Check-in está liberado a partir das 13h00 favor informar ao anfitrião o horário aproximado para entrega das chaves.\n\n⚠️ **Atenção / Cuidado:** Não force a chave na porta antiga da sala; basta puxar a folha da porta para fora com a outra mão enquanto gira a chave suavemente."
+            }
             q.contains("wifi") || q.contains("wi-fi") || q.contains("internet") || q.contains("senha") -> {
                 "📶 **Wi-Fi da Casa:**\n• **Rede:** $WIFI_SSID\n• **Senha:** $WIFI_PASSWORD\n\nVocê também pode copiar a senha com 1 toque no cartão de Wi-Fi da tela inicial!"
             }
             q.contains("porta antiga") || (q.contains("porta") && q.contains("abrir")) -> {
-                "🚪 **Dica de Ouro para a Porta de Entrada:**\nÉ uma porta antiga de madeira! Para abri-la facilmente, **puxe a folha da porta para fora com a outra mão enquanto gira a chave**. Assim a lingueta da fechadura desliza suavemente sem travar."
+                "🚪 **Dica de Ouro para a Porta de Entrada:**\nÉ uma porta antiga de madeira! Para abri-la facilmente, **puxe a folha da porta para fora com a outra mão enquanto gira a chave suavemente**. Assim a lingueta da fechadura desliza sem travar."
+            }
+            q.contains("churras") || q.contains("samambaia") -> {
+                "🥩 **Churrasqueira:**\nHá uma pequena churrasqueira portátil no espaço da samambaia."
+            }
+            q.contains("piano") || q.contains("música") || q.contains("melodia") || q.contains("tocar") -> {
+                "🎹 **Piano:**\nDisponível para quem gostar de tocar boas melodias durante a estadia."
+            }
+            q.contains("rede") || q.contains("descanso") -> {
+                "🌿 **Rede de Descanso:**\nHá uma rede disponível na varanda do segundo piso."
             }
             q.contains("tv") || q.contains("televis") || q.contains("controle") || q.contains("skynet") || q.contains("sky") -> {
                 "📺 **Passo a Passo da TV (2 Controles):**\n1. **Controle MAIOR:** Aperte 'POWER' para ligar e depois 'HOME'.\n2. Na tela, vá em 'Entrada/Input' e escolha:\n   - **HDMI 2** para Sky Net\n   - **HDMI 4 / Chromecast** para espelhar celular\n3. Se escolheu HDMI 2, use o **controle MENOR**: aperte 'MENU' e depois 'CANAIS' para escolher o canal desejado."
@@ -1582,8 +1604,8 @@ object HouseRepository {
             q.contains("lixo") || q.contains("recicl") -> {
                 "🗑️ **Lixo e Reciclagem:**\n• **Lixeira Externa:** Fica suspensa na calçada, atrás da árvore à esquerda do portão.\n• **Coleta do Caminhão:** Às 3ªs, 5ªs e sábados.\n• **Recicláveis:** Há uma cesta ao lado da geladeira.\n• **Banheiro:** Nunca jogue papel higiênico no vaso sanitário!"
             }
-            q.contains("máquina") || q.contains("lavar") || q.contains("roupa") -> {
-                "🧺 **Máquina de Lavar Roupas:**\n• **Passo Obrigatório:** Antes de escolher o programa de lavagem, gire o botão para a posição **'DESLIGAR'**.\n• Só depois disso selecione o ciclo desejado.\n• **Obs:** O enchimento de água da máquina é bem lento, é o funcionamento normal dela!"
+            q.contains("máquina") || q.contains("lavar") || q.contains("roupa") || q.contains("ferro") || q.contains("varal") || q.contains("cabide") || q.contains("passar") -> {
+                "🧺 **Lavanderia e Roupas (Máquina, Ferro & Varal):**\n• **Máquina, Ferro e Varal:** Encontram-se na **lavanderia** (área de serviço externa coberta).\n• **Cabides:** Há cabides disponíveis nos armários dos quartos de dormir.\n• **Instrução Obrigatória da Máquina:** Antes de escolher o programa de lavagem, gire o botão primeiro para a posição **'DESLIGAR'** e só depois escolha o ciclo.\n• **Obs:** O enchimento de água da máquina é bem lento (funcionamento normal)."
             }
             q.contains("toalha") || q.contains("coberta") || q.contains("lençol") || q.contains("cama") -> {
                 "🛏️ **Roupas de Cama e Toalhas Extras:**\nFicam guardadas no **armário branco do quarto de solteiro do andar de cima**! Lá você encontra toalhas extras, roupas de cama, colchas e cobertas bem quentinhas."
@@ -1594,14 +1616,29 @@ object HouseRepository {
             q.contains("portão") || q.contains("garagem") || q.contains("carro") || q.contains("estacionamento") -> {
                 "🚗 **Garagem e Portão Eletrônico:**\n• A casa possui 3 vagas (1 coberta).\n• Para abrir o portão de carros, aperte o **botão superior direito do controle remoto**.\n• A chave preta do chaveiro é reserva caso falte energia."
             }
+            q.contains("café") || q.contains("cha") || q.contains("chá") || q.contains("açucar") || q.contains("açúcar") || q.contains("despensa") || q.contains("sal") || q.contains("óleo") || q.contains("oleo") || q.contains("vinagre") -> {
+                "☕ **Despensa de Cortesia & Café:**\n• **Disponibilizamos para seu uso:** Pó de café, açúcar, adoçante, sal, vinagre, óleo de cozinha e variedades de chás relaxantes.\n• **Kit Café:** Filtro coador tradicional, filtros de papel e garrafa térmica na bancada da cozinha."
+            }
             q.contains("forno") || q.contains("fogão") || q.contains("cozinha") || q.contains("chama") -> {
                 "🍳 **Dica da Cozinha & Forno:**\nO forno a gás está com a chama baixa e pode apagar sozinho. Fiquem bem atentos ao utilizá-lo! Recomendamos usar a **Air Fryer** que assa com rapidez e segurança."
             }
-            q.contains("uber") || q.contains("transporte") || q.contains("táxi") || q.contains("g4") || q.contains("gw") || q.contains("ônibus") -> {
-                "🚕 **Mobilidade em São Lourenço:**\n• Aplicativos locais: **G4 Mobile (24h)** e **UP Mobilidade Urbana**.\n• Ônibus: Parada bem em frente à Pousada Le Sapé (passa de 1 em 1 hora).\n• Atenção ao trânsito: A cidade tem apenas 4 semáforos, o pedestre sempre tem a preferência na faixa!"
+            q.contains("cometa") || q.contains("são paulo") || q.contains("sao paulo") || q.contains("rio") || q.contains("sampaio") || q.contains("rodoviária") || q.contains("rodoviaria") -> {
+                "🚌 **Ônibus Interestaduais para São Lourenço:**\n\n" +
+                "• **São Paulo (Tietê) ⇄ São Lourenço (Viação Cometa):**\n" +
+                "  - Ida: 08:00, 12:15, 17:00, 19:30 e 23:30 (~5h45).\n" +
+                "  - Volta: 08:45, 12:15, 14:30, 16:50 e 23:35 / 23:45.\n" +
+                "  - Valores: R$ 164,99 (Conv.) a R$ 179,99 (Semileito).\n\n" +
+                "• **Rio de Janeiro (Novo Rio) ⇄ São Lourenço (Viação Sampaio):**\n" +
+                "  - Ida: 08:00, 11:00, 13:00, 20:30 e 21:30 (~5h30).\n" +
+                "  - Volta: 10:30, 16:10, 23:45 e 23:59 (~5h20 a 5h50).\n" +
+                "  - Valores: Executivo (~R$ 110 a R$ 155), Semileito (~R$ 170 a R$ 186), Leito (~R$ 225 a R$ 230).\n\n" +
+                "• **Soledade de Minas:** Linha de 1 em 1h (R$ 5,00) em frente à Le Sapé."
+            }
+            q.contains("uber") || q.contains("transporte") || q.contains("táxi") || q.contains("g4") || q.contains("gw") || q.contains("ônibus") || q.contains("soledade") -> {
+                "🚕 **Mobilidade & Ônibus:**\n• **Ônibus Urbano & Intermunicipal:** Parada bem em frente à Pousada Le Sapé (passa de 1 em 1 hora). O ônibus intermunicipal para Soledade de Minas também passa de 1 em 1 hora e custa R$ 5,00.\n• **Aplicativos locais:** G4 Mobile (24h) e UP Mobilidade Urbana.\n• **Atenção ao trânsito:** A cidade tem apenas 4 semáforos, o pedestre sempre tem a preferência na faixa!"
             }
             q.contains("degrau") || q.contains("cuidado") || q.contains("seguran") || q.contains("monoxido") || q.contains("alarme") -> {
-                "⚠️ **Segurança & Cuidados:**\n• **Degrau alto:** Na varanda bem em frente à cozinha. Cuidado redobrado à noite!\n• **Detectores de CO:** No corredor térreo e no 2º andar. A luzinha verde piscando indica funcionamento normal.\n• **Piso laminado:** Não molhar nem usar produtos químicos agressivos."
+                "⚠️ **Segurança & Cuidados:**\n• **Degrau alto:** Na varanda bem em frente à cozinha. Cuidado redobrado à noite!\n• **Detectores de CO:** No corredor térreo e no 2º andar. A luzinha verde piscando indica funcionamento normal.\n• **Piso laminado do 1º piso:** Não molhar nem usar produtos químicos agressivos."
             }
             else -> null
         }

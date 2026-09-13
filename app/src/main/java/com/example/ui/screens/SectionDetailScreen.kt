@@ -22,7 +22,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -48,6 +50,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,6 +62,21 @@ import coil.request.ImageRequest
 import com.example.data.model.ManualSection
 import com.example.data.repository.HouseRepository
 import com.example.ui.components.getSectionIcon
+
+private fun parseMarkdownText(text: String): AnnotatedString {
+    val parts = text.split("**")
+    return buildAnnotatedString {
+        parts.forEachIndexed { index, part ->
+            if (index % 2 == 1) {
+                pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                append(part)
+                pop()
+            } else {
+                append(part)
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,14 +222,16 @@ fun SectionDetailScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Item ${section.id} de 10",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            ),
-                            color = sectionColor
-                        )
+                        if (section.id != 1) {
+                            Text(
+                                text = "Item ${section.id} de 10",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                ),
+                                color = sectionColor
+                            )
+                        }
                         Text(
                             text = section.title,
                             style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
@@ -227,7 +250,7 @@ fun SectionDetailScreen(
 
             // Dedicated Quick Actions for specific sections
             if (section.id == 3) {
-                // Check-in & Wi-Fi Banner
+                // Main Check-in Highlight Banner
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
@@ -235,8 +258,15 @@ fun SectionDetailScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.AccessTime,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Acesso Rápido Wi-Fi",
+                                text = "Horário de Check-in",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -244,9 +274,36 @@ fun SectionDetailScreen(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
+                            text = "O Check-in está liberado a partir das 13h00 favor informar ao anfitrião o horário aproximado para entrega das chaves.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 21.sp
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Wi-Fi Quick Access Banner
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Acesso Rápido Wi-Fi",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
                             text = "Rede: ${HouseRepository.WIFI_SSID} • Senha: ${HouseRepository.WIFI_PASSWORD}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Button(
@@ -304,56 +361,15 @@ fun SectionDetailScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Warning Cards
-            if (section.warnings.isNotEmpty()) {
-                section.warnings.forEach { warning ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
-                            .testTag("warning_card"),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFFFF3CD)
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Warning,
-                                contentDescription = "Aviso importante",
-                                tint = Color(0xFF856404),
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = "Atenção / Cuidado",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF856404)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = warning,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF533F03)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
             // Section Items
-            Text(
-                text = "Detalhes e Orientações",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            if (section.id != 1) {
+                Text(
+                    text = "Detalhes e Orientações",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
 
             section.items.forEachIndexed { index, item ->
                 Card(
@@ -398,7 +414,7 @@ fun SectionDetailScreen(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = item.description,
+                            text = parseMarkdownText(item.description),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 20.sp
@@ -426,44 +442,73 @@ fun SectionDetailScreen(
                                 }
                             }
                         }
+
+                        // Observation Note (Callout with observation font)
+                        if (item.note != null) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("item_note_${index}")
+                            ) {
+                                Text(
+                                    text = item.note,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontStyle = FontStyle.Italic,
+                                        fontWeight = FontWeight.SemiBold,
+                                        letterSpacing = 0.2.sp
+                                    ),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
 
-            // Host Tips
-            if (section.tips.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Warning Cards (Positioned at the end of the page)
+            if (section.warnings.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                section.warnings.forEach { warning ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .testTag("warning_card"),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFFFF3CD)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.Lightbulb,
-                                contentDescription = "Dica",
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(20.dp)
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = "Aviso importante",
+                                tint = Color(0xFF856404),
+                                modifier = Modifier.size(24.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Dicas da Anfitriã Valéria",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        section.tips.forEach { tip ->
-                            Text(
-                                text = "• $tip",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Atenção / Cuidado",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF856404)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = warning,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF533F03),
+                                    lineHeight = 20.sp
+                                )
+                            }
                         }
                     }
                 }
@@ -484,7 +529,7 @@ fun SectionDetailScreen(
             ) {
                 Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Tirar dúvida desta seção com a Concierge")
+                Text("Tirar dúvida com a Concierge")
             }
 
             Spacer(modifier = Modifier.height(30.dp))

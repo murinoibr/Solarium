@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,15 +44,23 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +73,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -93,6 +103,7 @@ fun HomeScreen(
     val context = LocalContext.current
     val colors = SolariumTheme.colors
     val chunkedSections = androidx.compose.runtime.remember(sections) { sections.chunked(2) }
+    var showWifiDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -111,21 +122,14 @@ fun HomeScreen(
             )
         }
 
-        // 2. Linha de 5 Atalhos Rápidos Circulares (Wi-Fi, Anfitriã, Mapa, Dicas, Chat IA)
-        item(key = "quick_action_buttons_row") {
-            QuickActionButtonsRow(
-                onCopyWifi = {
+        // 2. Atalho do Wi-Fi com todas as funções integradas (cópia rápida, detalhes e configurações)
+        item(key = "quick_wifi_action") {
+            QuickWifiActionButton(
+                onClick = {
                     copyToClipboard(context, HouseRepository.WIFI_PASSWORD, "Senha do Wi-Fi copiada!")
                     onFeedback("Wi-Fi: ${HouseRepository.WIFI_SSID} • Senha copiada: ${HouseRepository.WIFI_PASSWORD}")
-                },
-                onContactHost = {
-                    copyToClipboard(context, HouseRepository.HOST_PHONE, "Contato da Anfitriã copiado!")
-                    onFeedback("Contato da Valéria: ${HouseRepository.HOST_PHONE_DISPLAY} (copiado!)")
-                    openWhatsApp(context, HouseRepository.HOST_PHONE, "Olá Valéria! Sou hóspede da casa Solarium.")
-                },
-                onNavigateToMap = onNavigateToMap,
-                onNavigateToRecommendations = onNavigateToRecommendations,
-                onNavigateToChat = onNavigateToChat
+                    showWifiDialog = true
+                }
             )
         }
 
@@ -226,6 +230,175 @@ fun HomeScreen(
             )
         }
     }
+
+    // Modal com todos os dados e funções do Wi-Fi
+    if (showWifiDialog) {
+        AlertDialog(
+            onDismissRequest = { showWifiDialog = false },
+            icon = {
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(CircleShape)
+                        .background(colors.sunOrangeContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Wifi,
+                        contentDescription = "Wi-Fi",
+                        tint = colors.warmTerracotta,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = "Wi-Fi da Casa",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 19.sp
+                    ),
+                    color = colors.textPrimary,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    // Nome da Rede (SSID)
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = colors.creamSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Nome da Rede (SSID)",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = colors.textSecondary
+                                )
+                                Text(
+                                    text = HouseRepository.WIFI_SSID,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = colors.textPrimary
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    copyToClipboard(context, HouseRepository.WIFI_SSID, "Nome da rede copiado!")
+                                    onFeedback("Nome da rede copiado: ${HouseRepository.WIFI_SSID}")
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copiar nome da rede",
+                                    tint = colors.warmTerracotta,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    // Senha do Wi-Fi
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = colors.creamSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Senha do Wi-Fi",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = colors.textSecondary
+                                )
+                                Text(
+                                    text = HouseRepository.WIFI_PASSWORD,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = colors.warmTerracotta
+                                )
+                            }
+                            IconButton(
+                                onClick = {
+                                    copyToClipboard(context, HouseRepository.WIFI_PASSWORD, "Senha copiada!")
+                                    onFeedback("Senha copiada: ${HouseRepository.WIFI_PASSWORD}")
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copiar senha",
+                                    tint = colors.warmTerracotta,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    Text(
+                        text = "A senha já foi copiada para sua área de transferência. Basta colar para conectar!",
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                        color = colors.textSecondary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        try {
+                            val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            onFeedback("Abra as configurações de Wi-Fi do seu aparelho.")
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.warmTerracotta,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Wifi,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Abrir Wi-Fi")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showWifiDialog = false }
+                ) {
+                    Text(
+                        text = "Fechar",
+                        color = colors.textSecondary
+                    )
+                }
+            }
+        )
+    }
 }
 
 /**
@@ -285,18 +458,48 @@ private fun SolariumMinimalistBrandHeader(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = "ESTÂNCIA & REFÚGIO • SÃO LOURENÇO, MG",
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 10.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 2.sp
-                ),
-                color = colors.warmTerracotta,
-                textAlign = TextAlign.Center
-            )
+            // Slogan com tipografia elegante e acolhedora
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(22.dp)
+                        .height(1.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color.Transparent, colors.warmTerracotta.copy(alpha = 0.55f))
+                            )
+                        )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Hospedagem Familiar",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 14.5.sp,
+                        fontWeight = FontWeight.Normal,
+                        fontStyle = FontStyle.Italic,
+                        fontFamily = FontFamily.Serif,
+                        letterSpacing = 0.6.sp
+                    ),
+                    color = colors.warmTerracotta,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .width(22.dp)
+                        .height(1.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(colors.warmTerracotta.copy(alpha = 0.55f), Color.Transparent)
+                            )
+                        )
+                )
+            }
 
             Spacer(modifier = Modifier.height(14.dp))
 
@@ -389,99 +592,53 @@ private fun MinimalistSunLogoCanvas(
 }
 
 /**
- * Linha de 5 Atalhos Rápidos Circulares (Wi-Fi, Anfitriã, Mapa, Dicas, Chat IA) exatamente como no vídeo.
+ * Atalho único do Wi-Fi na página principal com design acolhedor e funções completas de rede.
  */
 @Composable
-private fun QuickActionButtonsRow(
-    onCopyWifi: () -> Unit,
-    onContactHost: () -> Unit,
-    onNavigateToMap: () -> Unit,
-    onNavigateToRecommendations: () -> Unit,
-    onNavigateToChat: () -> Unit
+private fun QuickWifiActionButton(
+    onClick: () -> Unit
 ) {
     val colors = SolariumTheme.colors
 
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(top = 2.dp, bottom = 10.dp),
+        contentAlignment = Alignment.Center
     ) {
-        QuickActionButton(
-            title = "Wi-Fi",
-            icon = Icons.Default.Wifi,
-            onClick = onCopyWifi,
-            testTag = "quick_btn_wifi"
-        )
-        QuickActionButton(
-            title = "Anfitriã",
-            icon = Icons.Default.Person,
-            onClick = onContactHost,
-            testTag = "quick_btn_host"
-        )
-        QuickActionButton(
-            title = "Mapa",
-            icon = Icons.Default.Map,
-            onClick = onNavigateToMap,
-            testTag = "quick_btn_map"
-        )
-        QuickActionButton(
-            title = "Dicas",
-            icon = Icons.Default.Explore,
-            onClick = onNavigateToRecommendations,
-            testTag = "quick_btn_tips"
-        )
-        QuickActionButton(
-            title = "Chat IA",
-            icon = Icons.AutoMirrored.Filled.Chat,
-            onClick = onNavigateToChat,
-            testTag = "quick_btn_chat"
-        )
-    }
-}
-
-@Composable
-private fun QuickActionButton(
-    title: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-    testTag: String
-) {
-    val colors = SolariumTheme.colors
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(vertical = 4.dp, horizontal = 4.dp)
-            .testTag(testTag)
-    ) {
-        Box(
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .size(50.dp)
-                .clip(CircleShape)
-                .background(colors.sunOrangeContainer.copy(alpha = 0.7f)),
-            contentAlignment = Alignment.Center
+                .clip(RoundedCornerShape(16.dp))
+                .clickable(onClick = onClick)
+                .padding(vertical = 6.dp, horizontal = 24.dp)
+                .testTag("quick_btn_wifi")
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = colors.warmTerracotta,
-                modifier = Modifier.size(24.dp)
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(CircleShape)
+                    .background(colors.sunOrangeContainer.copy(alpha = 0.8f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Wifi,
+                    contentDescription = "Wi-Fi da Casa",
+                    tint = colors.warmTerracotta,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = "Wi-Fi",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp
+                ),
+                color = colors.textPrimary,
+                textAlign = TextAlign.Center
             )
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 12.sp
-            ),
-            color = colors.textPrimary,
-            textAlign = TextAlign.Center
-        )
     }
 }
 
