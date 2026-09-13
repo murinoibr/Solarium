@@ -105,13 +105,19 @@ fun RecommendationsScreen(
         try {
             val gmmIntentUri = Uri.parse("geo:0,0?q=${Uri.encode("${rec.title}, São Lourenço - MG")}")
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-            context.startActivity(mapIntent)
+            if (mapIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(mapIntent)
+            } else {
+                throw Exception("Map app not found")
+            }
         } catch (e: Exception) {
             val webIntent = Intent(
                 Intent.ACTION_VIEW,
                 Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encode("${rec.title}, São Lourenço - MG")}")
             )
-            context.startActivity(webIntent)
+            if (webIntent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(webIntent)
+            }
         }
     }
 

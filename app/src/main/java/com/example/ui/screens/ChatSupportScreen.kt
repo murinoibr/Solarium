@@ -105,12 +105,20 @@ fun ChatSupportScreen(
             val encodedMsg = URLEncoder.encode(fullText, "UTF-8")
             val whatsappUri = Uri.parse("https://api.whatsapp.com/send?phone=$phone&text=$encodedMsg")
             val intent = Intent(Intent.ACTION_VIEW, whatsappUri)
-            context.startActivity(intent)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            } else {
+                throw Exception("Activity not found")
+            }
         } catch (e: Exception) {
             onFeedback("Não foi possível abrir o WhatsApp. Tentando ligação...")
             try {
                 val telIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${HouseRepository.HOST_PHONE}"))
-                context.startActivity(telIntent)
+                if (telIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(telIntent)
+                } else {
+                    throw Exception("Activity not found")
+                }
             } catch (ex: Exception) {
                 onFeedback("WhatsApp da proprietária: ${HouseRepository.HOST_PHONE_DISPLAY}")
             }
@@ -122,7 +130,11 @@ fun ChatSupportScreen(
             val intent = Intent(Intent.ACTION_DIAL).apply {
                 data = Uri.parse("tel:${HouseRepository.HOST_PHONE}")
             }
-            context.startActivity(intent)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            } else {
+                throw Exception("Activity not found")
+            }
         } catch (e: Exception) {
             onFeedback("Telefone da proprietária: ${HouseRepository.HOST_PHONE_DISPLAY}")
         }
