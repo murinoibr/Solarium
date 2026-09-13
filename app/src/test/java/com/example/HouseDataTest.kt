@@ -13,9 +13,10 @@ class HouseDataTest {
     fun verifyAllTenSectionsExist() {
         val sections = HouseRepository.sections
         assertEquals(10, sections.size)
+        val sectionMap = sections.associateBy { it.id }
         // Check section IDs 1 through 10 in order
         for (i in 1..10) {
-            val section = sections.find { it.id == i }
+            val section = sectionMap[i]
             assertNotNull("Section $i must exist", section)
             assertTrue("Section $i must have items", section!!.items.isNotEmpty())
         }
