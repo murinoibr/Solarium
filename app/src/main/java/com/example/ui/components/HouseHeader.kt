@@ -50,9 +50,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.repository.HouseRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * Cabeçalho unificado com título, banner e carrossel de cômodos integrado.
+ */
 @Composable
 fun HouseHeader(
     searchQuery: String,
@@ -77,236 +81,270 @@ fun HouseHeader(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // Welcome Hero Banner
-        Card(
+        HeroBannerCard()
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        QuickChipsRow(
+            wifiCopied = wifiCopied,
+            onWifiCopiedChange = { wifiCopied = it },
+            addressCopied = addressCopied,
+            onAddressCopiedChange = { addressCopied = it },
+            coroutineScope = coroutineScope,
+            copyToClipboard = ::copyToClipboard
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        ManualSearchField(
+            searchQuery = searchQuery,
+            onSearchChange = onSearchChange
+        )
+    }
+}
+
+@Composable
+fun HeroBannerCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("hero_banner_card"),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag("hero_banner_card"),
-            shape = RoundedCornerShape(24.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-                                MaterialTheme.colorScheme.surface
-                            )
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                            MaterialTheme.colorScheme.surface
                         )
                     )
-                    .padding(20.dp)
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                )
+                .padding(20.dp)
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                        modifier = Modifier.padding(bottom = 8.dp)
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            modifier = Modifier.padding(bottom = 8.dp)
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Home,
-                                    contentDescription = "Airbnb",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Preferido dos Hóspedes • Airbnb",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = "Nota",
-                                    tint = Color(0xFFE67700),
-                                    modifier = Modifier.size(13.dp)
-                                )
-                                Spacer(modifier = Modifier.width(3.dp))
-                                Text(
-                                    text = "5.0 ★ São Lourenço",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Default.Home,
+                                contentDescription = "Airbnb",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Preferido dos Hóspedes • Airbnb",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
 
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "Nota",
+                                tint = Color(0xFFE67700),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = "5.0 ★ São Lourenço",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+
+                Text(
+                    text = "Solarium",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.5).sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Casa ampla com vista panorâmica • Anfitriã: ${HouseRepository.HOST_NAME}",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "4 quartos • 2 andares • 8 hóspedes • Bairro Ramon",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun QuickChipsRow(
+    wifiCopied: Boolean,
+    onWifiCopiedChange: (Boolean) -> Unit,
+    addressCopied: Boolean,
+    onAddressCopiedChange: (Boolean) -> Unit,
+    coroutineScope: CoroutineScope,
+    copyToClipboard: (String, String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // Wi-Fi Quick Copy
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = if (wifiCopied) MaterialTheme.colorScheme.secondaryContainer
+            else MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(14.dp))
+                .clickable {
+                    copyToClipboard("Senha do Wi-Fi", HouseRepository.WIFI_PASSWORD)
+                    onWifiCopiedChange(true)
+                    coroutineScope.launch {
+                        delay(2500)
+                        onWifiCopiedChange(false)
+                    }
+                }
+                .testTag("wifi_copy_chip")
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (wifiCopied) Icons.Default.Check else Icons.Default.Wifi,
+                    contentDescription = "Wi-Fi",
+                    tint = if (wifiCopied) MaterialTheme.colorScheme.secondary
+                    else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
                     Text(
-                        text = "Solarium",
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = (-0.5).sp
-                        ),
+                        text = if (wifiCopied) "Senha Copiada!" else "Wi-Fi: ${HouseRepository.WIFI_SSID}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Casa ampla com vista panorâmica • Anfitriã: ${HouseRepository.HOST_NAME}",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = "4 quartos • 2 andares • 8 hóspedes • Bairro Ramon",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = if (wifiCopied) "Pronto para colar" else "Toque para copiar",
+                        style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Quick Chips Row (Wi-Fi and Address)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Wi-Fi Quick Copy
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = if (wifiCopied) MaterialTheme.colorScheme.secondaryContainer
-                            else MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable {
-                                    copyToClipboard("Senha do Wi-Fi", HouseRepository.WIFI_PASSWORD)
-                                    wifiCopied = true
-                                    coroutineScope.launch {
-                                        delay(2500)
-                                        wifiCopied = false
-                                    }
-                                }
-                                .testTag("wifi_copy_chip")
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = if (wifiCopied) Icons.Default.Check else Icons.Default.Wifi,
-                                    contentDescription = "Wi-Fi",
-                                    tint = if (wifiCopied) MaterialTheme.colorScheme.secondary
-                                    else MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(
-                                        text = if (wifiCopied) "Senha Copiada!" else "Wi-Fi: ${HouseRepository.WIFI_SSID}",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = if (wifiCopied) "Pronto para colar" else "Toque para copiar",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        // Address Quick Copy
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = if (addressCopied) MaterialTheme.colorScheme.secondaryContainer
-                            else MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable {
-                                    copyToClipboard("Endereço", HouseRepository.HOUSE_ADDRESS)
-                                    addressCopied = true
-                                    coroutineScope.launch {
-                                        delay(2500)
-                                        addressCopied = false
-                                    }
-                                }
-                                .testTag("address_copy_chip")
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = if (addressCopied) Icons.Default.Check else Icons.Default.Place,
-                                    contentDescription = "Endereço",
-                                    tint = if (addressCopied) MaterialTheme.colorScheme.secondary
-                                    else MaterialTheme.colorScheme.tertiary,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(
-                                        text = if (addressCopied) "Endereço Copiado!" else "Rua Pres. C. Branco",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Atrás do Le Sapé",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Search in Manual Bar
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchChange,
+        // Address Quick Copy
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = if (addressCopied) MaterialTheme.colorScheme.secondaryContainer
+            else MaterialTheme.colorScheme.surfaceVariant,
             modifier = Modifier
-                .fillMaxWidth()
-                .testTag("manual_search_field"),
-            placeholder = {
-                Text(
-                    text = "Buscar por chaves, TV, fogão, lixo, regras...",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            leadingIcon = {
+                .weight(1f)
+                .clip(RoundedCornerShape(14.dp))
+                .clickable {
+                    copyToClipboard("Endereço", HouseRepository.HOUSE_ADDRESS)
+                    onAddressCopiedChange(true)
+                    coroutineScope.launch {
+                        delay(2500)
+                        onAddressCopiedChange(false)
+                    }
+                }
+                .testTag("address_copy_chip")
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Buscar",
-                    tint = MaterialTheme.colorScheme.primary
+                    imageVector = if (addressCopied) Icons.Default.Check else Icons.Default.Place,
+                    contentDescription = "Endereço",
+                    tint = if (addressCopied) MaterialTheme.colorScheme.secondary
+                    else MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(18.dp)
                 )
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(16.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
-            )
-        )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(
+                        text = if (addressCopied) "Endereço Copiado!" else "Rua Pres. C. Branco",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Atrás do Le Sapé",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
+}
+
+@Composable
+fun ManualSearchField(
+    searchQuery: String,
+    onSearchChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = onSearchChange,
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("manual_search_field"),
+        placeholder = {
+            Text(
+                text = "Buscar por chaves, TV, fogão, lixo, regras...",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Buscar",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+        )
+    )
 }
