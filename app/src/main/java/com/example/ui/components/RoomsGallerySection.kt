@@ -117,14 +117,16 @@ fun RoomsGallerySection(
         "Fachada & Garagem"
     )
 
-    val filteredRooms = when (selectedFilter) {
-        "Quartos" -> rooms.filter { it.categoryIcon == "Bed" || it.title.contains("Quarto", ignoreCase = true) }
-        "Salas" -> rooms.filter { it.categoryIcon == "Tv" || it.categoryIcon == "MusicNote" || it.title.contains("Sala", ignoreCase = true) }
-        "Cozinha & Copa" -> rooms.filter { it.categoryIcon == "Kitchen" || it.title.contains("Cozinha", ignoreCase = true) }
-        "Varandas & Solarium" -> rooms.filter { it.categoryIcon == "Deck" || it.title.contains("Solarium", ignoreCase = true) || it.title.contains("Varanda", ignoreCase = true) }
-        "Banheiros" -> rooms.filter { it.categoryIcon == "Bathtub" || it.title.contains("Banheiro", ignoreCase = true) }
-        "Fachada & Garagem" -> rooms.filter { it.categoryIcon == "DirectionsCar" || it.categoryIcon == "Yard" || it.title.contains("Fachada", ignoreCase = true) || it.title.contains("Garagem", ignoreCase = true) }
-        else -> rooms
+    val filteredRooms = remember(rooms, selectedFilter) {
+        when (selectedFilter) {
+            "Quartos" -> rooms.filter { it.categoryIcon == "Bed" || it.title.contains("Quarto", ignoreCase = true) }
+            "Salas" -> rooms.filter { it.categoryIcon == "Tv" || it.categoryIcon == "MusicNote" || it.title.contains("Sala", ignoreCase = true) }
+            "Cozinha & Copa" -> rooms.filter { it.categoryIcon == "Kitchen" || it.title.contains("Cozinha", ignoreCase = true) }
+            "Varandas & Solarium" -> rooms.filter { it.categoryIcon == "Deck" || it.title.contains("Solarium", ignoreCase = true) || it.title.contains("Varanda", ignoreCase = true) }
+            "Banheiros" -> rooms.filter { it.categoryIcon == "Bathtub" || it.title.contains("Banheiro", ignoreCase = true) }
+            "Fachada & Garagem" -> rooms.filter { it.categoryIcon == "DirectionsCar" || it.categoryIcon == "Yard" || it.title.contains("Fachada", ignoreCase = true) || it.title.contains("Garagem", ignoreCase = true) }
+            else -> rooms
+        }
     }
 
     Column(
