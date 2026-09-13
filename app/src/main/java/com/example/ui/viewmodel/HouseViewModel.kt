@@ -49,6 +49,7 @@ class HouseViewModel : ViewModel() {
     val uiState: StateFlow<HouseUiState> = _uiState.asStateFlow()
 
     val allSections: List<ManualSection> = HouseRepository.sections
+    private val sectionsById: Map<Int, ManualSection> = allSections.associateBy { it.id }
     val allLocations: List<MapLocation> = HouseRepository.mapLocations
     val allFloorPoints: List<FloorPlanPoint> = HouseRepository.floorPlanPoints
     val allRecommendations: List<LocalRecommendation> = HouseRepository.localRecommendations
@@ -71,7 +72,7 @@ class HouseViewModel : ViewModel() {
     }
 
     fun openSectionById(sectionId: Int) {
-        val found = allSections.find { it.id == sectionId }
+        val found = sectionsById[sectionId]
         _uiState.update { it.copy(selectedSection = found) }
     }
 
