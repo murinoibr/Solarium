@@ -1393,6 +1393,8 @@ private fun NeighborhoodMapCanvas(
             "sorveteria_miro" to Pair(0.51f, 0.47f),
             "mercado_municipal" to Pair(0.60f, 0.62f),
             "laticinios_miramar" to Pair(0.65f, 0.55f),
+            "supermercado_carrossel" to Pair(0.53f, 0.64f),
+            "supermercado_abc" to Pair(0.48f, 0.69f),
             "supermercado_centro" to Pair(0.50f, 0.66f),
             "posto_san_remo" to Pair(0.47f, 0.55f),
             "trem_aguas" to Pair(0.78f, 0.58f),
@@ -1819,7 +1821,7 @@ private fun getCategoryIcon(cat: LocationCategory): ImageVector {
 private fun iconForCategory(cat: LocationCategory, id: String = ""): ImageVector {
     return when {
         id == "trem_aguas" -> Icons.Default.Train
-        id == "supermercado_centro" -> Icons.Default.ShoppingBag
+        id == "supermercado_centro" || id == "supermercado_carrossel" || id == "supermercado_abc" -> Icons.Default.ShoppingBag
         id == "trash_bin" -> Icons.Default.Delete
         id == "hospital_sao_lourenco" || id == "upa_sao_lourenco" -> Icons.Default.LocalHospital
         id == "bombeiros_sao_lourenco" -> Icons.Default.LocalFireDepartment

@@ -883,6 +883,42 @@ object HouseRepository {
             googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=Rua+Wenceslau+Braz+Sao+Lourenco+MG"
         ),
         MapLocation(
+            id = "supermercado_carrossel",
+            title = "Supermercados Carrossel (Loja Centro / Praça)",
+            category = LocationCategory.SERVICES,
+            address = "Praça Humberto Sanches, 105 - Centro, São Lourenço - MG, CEP 37470-000",
+            description = "Tradicional e renomada rede de supermercados de São Lourenço e região. Destaque para o excelente açougue com cortes especiais para churrasco, hortifrúti fresco selecionado, padaria artesanal com pães quentinhos e ampla adega de vinhos e bebidas.",
+            tip = "Muito querido pelos moradores e turistas! Amplo estacionamento e excelente para as compras do churrasco e abastecer a casa. Possui outra unidade na Av. Dr. Olavo Gomes Pinto, 95.",
+            latitude = -22.115800,
+            longitude = -45.051500,
+            distanceEstimate = "2,0 km (~5 min de carro)",
+            tags = listOf("Supermercado Carrossel", "Açougue & Churrasco", "Padaria Própria", "Hortifrúti", "Tradição"),
+            plusCode = "VWMX+8C São Lourenço, MG",
+            rating = 4.6f,
+            reviewsCount = 2540,
+            openingHours = "Seg a Sáb das 08:00 às 22:00 • Dom das 08:00 às 18:00",
+            googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=Supermercado+Carrossel+Sao+Lourenco+MG",
+            phone = "(35) 2532-5550"
+        ),
+        MapLocation(
+            id = "supermercado_abc",
+            title = "Supermercado ABC (Hiper ABC Centro)",
+            category = LocationCategory.SERVICES,
+            address = "Rua XV de Novembro, 32 - Centro, São Lourenço - MG, CEP 37470-000",
+            description = "Grande hipermercado da conceituada rede mineira Grupo ABC. Variedade imensa de produtos, marcas nacionais e importadas, hortifrúti diário, açougue completo, padaria, adega e bazar de utilidades com preços competitivos.",
+            tip = "Excelente para grandes compras de estadia e feriados. Grande variedade de rótulos de bebidas, petiscos e carnes. Aplicativo Super ABC+ com descontos.",
+            latitude = -22.118100,
+            longitude = -45.050800,
+            distanceEstimate = "2,2 km (~5 min de carro)",
+            tags = listOf("Hipermercado ABC", "Rede ABC", "Hortifrúti", "Açougue", "Preço Baixo", "Variedade"),
+            plusCode = "VWMX+Q7 São Lourenço, MG",
+            rating = 4.5f,
+            reviewsCount = 2210,
+            openingHours = "Seg a Sáb das 07:30 às 21:00 • Dom das 08:00 às 18:00",
+            googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=Supermercado+ABC+Sao+Lourenco+MG",
+            phone = "(37) 3512-9300"
+        ),
+        MapLocation(
             id = "supermercado_centro",
             title = "Supermercado Bretas (Dom Pedro II)",
             category = LocationCategory.SERVICES,
@@ -1556,6 +1592,17 @@ object HouseRepository {
             priceLevel = "Gratuito (ou teleférico pago)",
             isMustVisit = false,
             tags = listOf("Pôr do Sol", "Teleférico", "Mirante")
+        ),
+        LocalRecommendation(
+            id = "rec_9",
+            title = "Supermercados Locais (Carrossel & ABC)",
+            category = "Compras & Mercados",
+            description = "Para abastecer a casa e comprar itens para o churrasco: o Supermercado Carrossel (Praça Humberto Sanches) tem açougue de excelência e hortifrúti fresco; o Hiper ABC (Rua XV de Novembro) oferece grande variedade de marcas e preços competitivos.",
+            hostTip = "Ambos ficam a apenas 5 minutos de carro da casa no Centro e contam com estacionamento.",
+            address = "Centro de São Lourenço",
+            priceLevel = "$$ (Compras e Churrasco)",
+            isMustVisit = false,
+            tags = listOf("Supermercado", "Açougue", "Churrasco", "Carrossel", "ABC")
         )
     )
 
@@ -1621,6 +1668,12 @@ object HouseRepository {
             }
             q.contains("forno") || q.contains("fogão") || q.contains("cozinha") || q.contains("chama") -> {
                 "🍳 **Dica da Cozinha & Forno:**\nO forno a gás está com a chama baixa e pode apagar sozinho. Fiquem bem atentos ao utilizá-lo! Recomendamos usar a **Air Fryer** que assa com rapidez e segurança."
+            }
+            q.contains("mercado") || q.contains("supermercado") || q.contains("carrossel") || q.contains("abc") || q.contains("bretas") || q.contains("compras") || q.contains("açougue") || q.contains("acougue") -> {
+                "🛒 **Supermercados em São Lourenço (~5 min de carro):**\n\n" +
+                "• **Supermercados Carrossel:** Praça Humberto Sanches, 105 (Centro) e Av. Olavo Gomes Pinto, 95. Ótimo açougue para carnes de churrasco, hortifrúti fresco e padaria própria (Seg a Sáb 08h-22h, Dom 08h-18h).\n\n" +
+                "• **Supermercado ABC (Hiper ABC):** Rua XV de Novembro, 32 (Centro). Amplo hipermercado com enorme variedade de marcas, preços baixos, bebidas e bazar (Seg a Sáb 07h30-21h, Dom 08h-18h).\n\n" +
+                "• **Supermercado Bretas:** Av. Dom Pedro II, 780 (Centro). Loja grande com estacionamento próprio coberto."
             }
             q.contains("cometa") || q.contains("são paulo") || q.contains("sao paulo") || q.contains("rio") || q.contains("sampaio") || q.contains("rodoviária") || q.contains("rodoviaria") -> {
                 "🚌 **Ônibus Interestaduais para São Lourenço:**\n\n" +
