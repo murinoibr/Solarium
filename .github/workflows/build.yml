@@ -36,6 +36,8 @@ jobs:
 
       - name: Enviar dependências ao GitHub
         uses: gradle/actions/dependency-submission@v6
+        with:
+          dependency-resolution-task: ':ForceDependencyResolutionPlugin_resolveAllDependencies'
 
       - name: Gerar chave de assinatura de teste (debug.keystore)
         run: |
