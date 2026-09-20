@@ -20,6 +20,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar componentes do Android SDK
+        run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.1.0"
+
       - name: Instalar Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -27,7 +33,7 @@ jobs:
           cache-cleanup: always
 
       - name: Enviar dependências ao GitHub
-        uses: gradle/actions/dependency-submission@v4
+        uses: gradle/actions/dependency-submission@v6
 
       - name: Gerar chave de assinatura de teste (debug.keystore)
         run: |
