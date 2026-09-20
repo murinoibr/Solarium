@@ -1,11 +1,11 @@
-package com.murinoi
+package com.example
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.murinoi.ui.screens.MainAppScreen
-import com.murinoi.ui.theme.MyApplicationTheme
+import com.example.ui.screens.MainAppScreen
+import com.example.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
