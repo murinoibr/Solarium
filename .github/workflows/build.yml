@@ -38,6 +38,7 @@ jobs:
         uses: gradle/actions/dependency-submission@v6
         with:
           dependency-resolution-task: ':ForceDependencyResolutionPlugin_resolveAllDependencies'
+          dependency-graph-continue-on-failure: true
 
       - name: Gerar chave de assinatura de teste (debug.keystore)
         run: |
