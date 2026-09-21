@@ -37,4 +37,9 @@ class IconMapperTest {
         assertEquals(Icons.AutoMirrored.Filled.Help, getSectionIcon(""))
         assertEquals(Icons.AutoMirrored.Filled.Help, getSectionIcon("Random"))
     }
+
+    @Test
+    fun getSectionIcon_caseSensitive_returnsFallbackVector() {
+        assertEquals(Icons.AutoMirrored.Filled.Help, getSectionIcon("favorite"))
+    }
 }
