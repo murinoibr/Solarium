@@ -9,6 +9,7 @@ import com.example.data.model.MapLocation
 import com.example.data.model.RoomItem
 import com.example.data.model.RoomPhoto
 import com.example.data.model.SectionItem
+import com.example.BuildConfig
 
 object HouseRepository {
 
@@ -21,8 +22,8 @@ object HouseRepository {
     val CHECKIN_TIME = "A partir das 13:00"
     val SILENCE_HOURS = "22:00 às 07:00"
     val HOST_NAME = "Valéria"
-    val HOST_PHONE = "5521996917799" // Telefone / WhatsApp da anfitriã Valéria (+55 21 99691-7799)
-    val HOST_PHONE_DISPLAY = "(21) 99691-7799"
+    val HOST_PHONE = BuildConfig.HOST_PHONE
+    val HOST_PHONE_DISPLAY = BuildConfig.HOST_PHONE_DISPLAY
 
     val sections: List<ManualSection> = listOf(
         // (1) Bem Vindo
