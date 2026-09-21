@@ -1,8 +1,5 @@
 package com.example.data.model
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-
 data class ManualSection(
     val id: Int, // 1 to 10
     val title: String,
