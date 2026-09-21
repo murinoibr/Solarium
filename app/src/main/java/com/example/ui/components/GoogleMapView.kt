@@ -1,9 +1,6 @@
 package com.example.ui.components
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.view.ViewGroup
