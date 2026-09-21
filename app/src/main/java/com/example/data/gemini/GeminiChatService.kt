@@ -17,7 +17,9 @@ object GeminiChatService {
 
     private const val TAG = "GeminiChatService"
     private const val MODEL_NAME = "gemini-3.1-flash-lite-preview"
-    private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+    internal var BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+
+    internal var testApiKey: String? = null
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(25, TimeUnit.SECONDS)
@@ -57,7 +59,7 @@ object GeminiChatService {
         val instantAnswer = HouseRepository.getInstantAnswer(userQuery)
         
         val apiKey = try {
-            BuildConfig.GEMINI_API_KEY
+            testApiKey ?: BuildConfig.GEMINI_API_KEY
         } catch (e: Throwable) {
             ""
         }
