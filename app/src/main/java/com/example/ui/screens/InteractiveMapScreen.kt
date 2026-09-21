@@ -156,22 +156,26 @@ fun InteractiveMapScreen(
     }
 
     val filteredLocations = remember(locations, activeCategory, searchQuery) {
-        var list = locations
-        if (activeCategory != null) {
-            list = list.filter { it.category == activeCategory }
-        }
-        if (searchQuery.isNotBlank()) {
+        if (activeCategory == null && searchQuery.isBlank()) {
+            locations
+        } else {
             val q = searchQuery.trim().lowercase(Locale.ROOT)
-            list = list.filter { loc ->
-                loc.title.lowercase(Locale.ROOT).contains(q) ||
-                    loc.address.lowercase(Locale.ROOT).contains(q) ||
-                    loc.description.lowercase(Locale.ROOT).contains(q) ||
-                    loc.category.label.lowercase(Locale.ROOT).contains(q) ||
-                    loc.tags.any { it.lowercase(Locale.ROOT).contains(q) } ||
-                    (loc.plusCode?.lowercase(Locale.ROOT)?.contains(q) == true)
+            val isQueryBlank = q.isEmpty()
+            locations.filter { loc ->
+                if (activeCategory != null && loc.category != activeCategory) {
+                    false
+                } else if (isQueryBlank) {
+                    true
+                } else {
+                    loc.title.lowercase(Locale.ROOT).contains(q) ||
+                        loc.address.lowercase(Locale.ROOT).contains(q) ||
+                        loc.description.lowercase(Locale.ROOT).contains(q) ||
+                        loc.category.label.lowercase(Locale.ROOT).contains(q) ||
+                        loc.tags.any { it.lowercase(Locale.ROOT).contains(q) } ||
+                        (loc.plusCode?.lowercase(Locale.ROOT)?.contains(q) == true)
+                }
             }
         }
-        list
     }
 
     // Limpa a seleção caso o local selecionado não pertença à categoria filtrada ou à busca atual
