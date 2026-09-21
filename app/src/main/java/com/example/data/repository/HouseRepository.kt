@@ -17,7 +17,7 @@ object HouseRepository {
     val HOUSE_ADDRESS = "Rua Presidente Castelo Branco, 95, Ramon, São Lourenço - MG"
     val HOUSE_REFERENCE = "Primeira rua logo atrás da Pousada Le Sapé"
     val WIFI_SSID = "ValeriaMR"
-    val WIFI_PASSWORD = "pazeamor"
+    val WIFI_PASSWORD = com.example.BuildConfig.WIFI_PASSWORD
     val CHECKIN_TIME = "A partir das 13:00"
     val SILENCE_HOURS = "22:00 às 07:00"
     val HOST_NAME = "Valéria"
