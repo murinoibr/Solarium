@@ -719,9 +719,9 @@ fun InteractiveMapScreen(
                 ) {
                     if (activeCategory == null && searchQuery.isBlank()) {
                         // Exibe todas as categorias organizadas por tipo com cabeçalhos visuais
+                        val groupedLocations = filteredLocations.groupBy { it.category }
                         LocationCategory.entries.forEach { cat ->
-                            val itemsInCat = filteredLocations.filter { it.category == cat }
-                            if (itemsInCat.isNotEmpty()) {
+                            groupedLocations[cat]?.let { itemsInCat ->
                                 item(key = "header_${cat.name}") {
                                     CategorySectionHeader(
                                         category = cat,
