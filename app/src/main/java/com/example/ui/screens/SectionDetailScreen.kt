@@ -62,8 +62,10 @@ import coil.request.ImageRequest
 import com.example.data.model.ManualSection
 import com.example.data.repository.HouseRepository
 import com.example.ui.components.getSectionIcon
+import androidx.annotation.VisibleForTesting
 
-private fun parseMarkdownText(text: String): AnnotatedString {
+@VisibleForTesting
+internal fun parseMarkdownText(text: String): AnnotatedString {
     val parts = text.split("**")
     return buildAnnotatedString {
         parts.forEachIndexed { index, part ->
